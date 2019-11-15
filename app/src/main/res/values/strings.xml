@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Labour</string>
+    <string name="scan_your_nfc_tag_to_login">Scan your NFC Tag to login!</string>
+</resources>
