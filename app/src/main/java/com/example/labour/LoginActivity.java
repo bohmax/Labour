@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,6 +13,7 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -18,6 +21,7 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -33,7 +37,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends AppCompatActivity {
 
     NfcAdapter nfc;
     PendingIntent pendingIntent = null;
@@ -68,7 +72,6 @@ public class LoginActivity extends Activity {
                         new String[]{permission},
                         requestCode); //requestcode specifica il numero di richiesta
             }
-
         } else return true;
         return false;
     }
@@ -76,13 +79,17 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
-            nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
-        }
         setContentView(R.layout.activity_main);
         text = findViewById(R.id.text);
+
+        if(savedInstanceState != null)
+            nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
+        else
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_menu, new MenuFragment()).commit();
         if(requestPermission(Manifest.permission.NFC, NFC_PERMISSION))
-            Toast.makeText(this,"funziona", Toast.LENGTH_LONG);
+            //Toast.makeText(this,"funziona", Toast.LENGTH_LONG);
+            Log.i("Funziona", "GOOD");
 
         //progress = findViewById(R.id.progressBar_cyclic);
         //Toolbar toolbar = findViewById(R.id.toolbar);
@@ -112,11 +119,14 @@ public class LoginActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(nfc != null)
-            if (nfc.isEnabled())
-                nfc.enableForegroundDispatch(this, pendingIntent,null, null);
+        if(nfc != null) {
+            boolean pref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("NFC", true);
+            Log.i("preso", String.valueOf(pref));
+            if (nfc.isEnabled()) nfc.enableForegroundDispatch(this, pendingIntent, null, null);
+            else if(!pref) sb.dismiss();
             else if (!nfc_no_choise) alertDialog.show();
             else sb.show();
+        }
     }
 
     @Override
