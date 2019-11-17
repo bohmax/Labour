@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Labour</string>
     <string name="scan_your_nfc_tag_to_login">Scan your NFC Tag to login!</string>
+    <string name="ATTIVA_NFC">Attiva il lettore NFC per accedere più facilmente</string>
 </resources>
