@@ -4,16 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -24,9 +20,10 @@ import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -132,14 +129,15 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(nfc != null && nfc.isEnabled())
+        if(nfc != null && nfc.isEnabled()) {
             nfc.disableForegroundDispatch(this);
-        if(alertDialog.isShowing())
-            alertDialog.dismiss();
+            if (alertDialog.isShowing())
+                alertDialog.dismiss();
+        }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putBoolean("NFC_CHOISE", nfc_no_choise);
     }
@@ -175,7 +173,34 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    //per la gestione della tastiera
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE); //disabilita input
 
+        switch (keyCode){
+            case KeyEvent.KEYCODE_ENTER: {
+                endKeyboard();
+                break;
+            }
+            case (KeyEvent.KEYCODE_BACK): {
+                moveTaskToBack(true);
+                break;
+            }
+            default: {
+                int value = event.getUnicodeChar();
+                if (value != 0) {
+                    String replace = String.valueOf((char) event.getUnicodeChar()); //è un carattere non speciale
+                    text.append(replace);
+                    //progress.setVisibility(View.VISIBLE);
+                    if (text.length() == 1)
+                        handler.postDelayed(task, 10000);
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     private NdefMessage[] getNdefMessages(Intent intent) {
         Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
@@ -207,6 +232,7 @@ public class LoginActivity extends AppCompatActivity {
                     int languageLength = payloadBytes[0] & 0x03F - 1; //status byte: bits 5..0 indicate length of language code
 
                     //-----------------
+
                     builder.append(new String(payloadBytes, languageLength + 1, payloadBytes.length - 1 - languageLength,charset)).append(" \n");
                     Log.d("READING", new String(payloadBytes, StandardCharsets.UTF_8));
                 }
@@ -244,14 +270,11 @@ public class LoginActivity extends AppCompatActivity {
 
         // create alert dialog
         return alertDialogBuilder.create();
-
-        // show it
-        //Toast.makeText(this, "Abilita NFC", Toast.LENGTH_SHORT).show();
     }
 
     private void endKeyboard(){
         text.setText("");
-        progress.setVisibility(View.GONE);
+        //progress.setVisibility(View.GONE);
         handler.removeCallbacks(task);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }

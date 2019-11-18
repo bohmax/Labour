@@ -5,7 +5,7 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="NFC"
-            android:summary="Richiedi di attivare l'NFC se non attivo"
+            android:summary="Richiedi di attivare l'NFC, se presente e se non è attivo"
             android:title="Richiedi NFC" />
     </PreferenceCategory>
 </PreferenceScreen>
