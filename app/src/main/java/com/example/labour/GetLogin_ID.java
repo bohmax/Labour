@@ -86,7 +86,9 @@ class GetLogin_ID {
      * @return la stringa che rappresenta l'id
      */
     static String get_ID(){
-        return sb.toString();
+        String save = sb.toString();
+        resetSb();
+        return save;
     }
 
     /**

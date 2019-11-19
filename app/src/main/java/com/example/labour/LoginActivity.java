@@ -75,7 +75,6 @@ public class LoginActivity extends AppCompatActivity {
         //progress.setVisibility(View.GONE);
     }
 
-    //nfc in giù
     @Override
     protected void onResume() {
         super.onResume();
@@ -111,7 +110,6 @@ public class LoginActivity extends AppCompatActivity {
 
         NdefMessage[] messages = GetLogin_ID.getNdefMessages(intent);
         if(messages != null){
-            System.out.println(messages[0]);
             text.setText(GetLogin_ID.getNFCPayload(messages[0]));
         } else
             Log.i("Empy", "empty text!");
@@ -142,6 +140,7 @@ public class LoginActivity extends AppCompatActivity {
         switch (keyCode){
             case KeyEvent.KEYCODE_ENTER: {
                 String _id = GetLogin_ID.get_ID();
+                Log.i("VAL", _id);
                 break;
             }
             case (KeyEvent.KEYCODE_BACK): {
