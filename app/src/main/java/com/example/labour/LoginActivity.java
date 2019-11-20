@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteConstraintException;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -20,35 +21,33 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
 public class LoginActivity extends AppCompatActivity {
 
-    NfcAdapter nfc;
-    PendingIntent pendingIntent = null;
-    AlertDialog alertDialog;
-    TextView text;
-    ProgressBar progress;
-    Snackbar sb;
+    private NfcAdapter nfc;
+    private PendingIntent pendingIntent = null;
+    private AlertDialog alertDialog;
+    private ProgressBar progress;
+    private Snackbar sb;
+    private MyDatabase mydb;
+
     boolean nfc_no_choise = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
     final int NFC_PERMISSION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        text = findViewById(R.id.text);
+        setContentView(R.layout.activity_login);
 
         if(savedInstanceState != null)
             nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
-        else
-            getSupportFragmentManager().beginTransaction()
+
+        getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_menu, new MenuFragment()).commit();
         if(requestPermission(Manifest.permission.NFC, NFC_PERMISSION))
-            //Toast.makeText(this,"funziona", Toast.LENGTH_LONG);
             Log.i("Funziona", "GOOD");
 
         //progress = findViewById(R.id.progressBar_cyclic);
@@ -73,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         //toolbar.setFocusable(false);
         //toolbar.setFocusableInTouchMode(false);
         //progress.setVisibility(View.GONE);
+        mydb = new MyDatabase(this);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
 
         NdefMessage[] messages = GetLogin_ID.getNdefMessages(intent);
         if(messages != null){
-            text.setText(GetLogin_ID.getNFCPayload(messages[0]));
+            tryInsertDB(GetLogin_ID.getNFCPayload(messages[0]));
         } else
             Log.i("Empy", "empty text!");
     }
@@ -139,8 +139,7 @@ public class LoginActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode){
             case KeyEvent.KEYCODE_ENTER: {
-                String _id = GetLogin_ID.get_ID();
-                Log.i("VAL", _id);
+                tryInsertDB(GetLogin_ID.get_ID());
                 break;
             }
             case (KeyEvent.KEYCODE_BACK): {
@@ -174,15 +173,30 @@ public class LoginActivity extends AppCompatActivity {
         return false;
     }
 
+    private void tryInsertDB(String id){
+        if(id.length()>0){
+            Intent i = new Intent(this, MainActivity.class);
+            try {
+                Log.i("ID", id);
+                mydb.createRecords(id, "Utente", "Prova", "M", 22);
+                        i.putExtra("Exist", false);
+            } catch (SQLiteConstraintException e) {
+                        i.putExtra("Exist", true);
+            }
+            i.putExtra("ID", id);
+            startActivity(i);
+        }
+    }
+
     private AlertDialog createWirlessAlert(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         // set title
-        alertDialogBuilder.setTitle("Wifi Settings");
+        alertDialogBuilder.setTitle("NFC Settings");
 
         // set dialog message
         alertDialogBuilder
-                .setMessage("Do you want to enable WIFI ?")
+                .setMessage("Do you want to enable NFC ?")
                 .setCancelable(false)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {

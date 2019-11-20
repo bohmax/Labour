@@ -22,6 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".PreferenceActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".SubscribeFragment" />
     </application>
 
 </manifest>

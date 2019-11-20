@@ -4,4 +4,12 @@
     <string name="ATTIVA_NFC">Attiva il lettore NFC per accedere più facilmente</string>
     <string name="settings">Settings</string>
     <string name="esterno">Oppure se non disponibile o se si preferisce, si connetta il lettore esterno!</string>
+    <string name="nome">Nome</string>
+    <string name="cognome">Cognome</string>
+    <string name="sesso">Sesso</string>
+    <string name="uomo">Uomo</string>
+    <string name="eta">Età</string>
+    <string name="profilo">Profilo</string>
+    <string name="donna">Donna</string>
+    <string name="speciale">Speciale</string>
 </resources>
