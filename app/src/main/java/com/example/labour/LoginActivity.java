@@ -176,13 +176,10 @@ public class LoginActivity extends AppCompatActivity {
     private void tryInsertDB(String id){
         if(id.length()>0){
             Intent i = new Intent(this, MainActivity.class);
-            try {
-                Log.i("ID", id);
-                mydb.createRecords(id, "Utente", "Prova", "M", 22);
-                        i.putExtra("Exist", false);
-            } catch (SQLiteConstraintException e) {
-                        i.putExtra("Exist", true);
-            }
+            if(mydb.createRecords(id, "Utente", "Prova", "M", 22) == -1)
+                i.putExtra("Exist", false);
+            else
+                i.putExtra("Exist", true);
             i.putExtra("ID", id);
             startActivity(i);
         }

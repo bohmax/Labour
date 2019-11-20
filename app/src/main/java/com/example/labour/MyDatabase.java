@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 
-public class MyDatabase {
+class MyDatabase {
 
     private static SQLiteDatabase database;
     private final static String OP_TABLE="Operai"; // name of table
@@ -18,20 +18,32 @@ public class MyDatabase {
     private final static String OP_ETA="età";
 
     MyDatabase(Context context){
-        Database dbHelper = Database.getInstance(context);
-        database = dbHelper.getWritableDatabase();
+        if (database == null) {
+            Database dbHelper = Database.getInstance(context);
+            database = dbHelper.getWritableDatabase();
+        }
     }
 
 
 
-    long createRecords(String id, String name, String cognome, String gender, int eta) throws SQLiteConstraintException {
+    long createRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_ID, id);
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
         values.put(OP_SESSO, gender);
         values.put(OP_ETA, eta);
-        return database.insertOrThrow(OP_TABLE, null, values);
+        return database.insert(OP_TABLE, null, values);
+    }
+
+    long updateRecords(String id, String name, String cognome, String gender, int eta) throws SQLiteConstraintException {
+        ContentValues values = new ContentValues();
+        values.put(OP_ID, id);
+        values.put(OP_NOME, name);
+        values.put(OP_COGNOME, cognome);
+        values.put(OP_SESSO, gender);
+        values.put(OP_ETA, eta);
+        return database.update(OP_TABLE, values, "_id="+id, null);
     }
 
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){

@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
         if(!exist){
             sf = new SubscribeFragment();
             sf.setCancelable(false);
+            Bundle bundle = new Bundle();
+            bundle.putString("ID", user_ID);
+            sf.setArguments(bundle);
             sf.show(getSupportFragmentManager(), "SubFG TAG");
         }
         String prova = "era presente nel db? " + exist + " value " + user_ID;
