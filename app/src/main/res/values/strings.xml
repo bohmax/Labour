@@ -12,4 +12,6 @@
     <string name="profilo">Profilo</string>
     <string name="donna">Donna</string>
     <string name="speciale">Speciale</string>
+    <string name="set_data">Imposta dati account</string>
+    <string name="camera">camera</string>
 </resources>

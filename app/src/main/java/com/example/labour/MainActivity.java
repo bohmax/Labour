@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import static androidx.fragment.app.DialogFragment.STYLE_NORMAL;
+
 public class MainActivity extends AppCompatActivity {
 
     private boolean exist = false;
@@ -44,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         sf.showPopup(v);
+    }
+
+    public void onImageClick(View v) {
+        sf.onImageClick(v);
     }
 
 }
