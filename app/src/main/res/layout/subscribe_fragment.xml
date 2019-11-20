@@ -31,15 +31,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/editNome"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editNomeWrapper"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:ems="10"
-            android:hint="@string/nome"
-            android:inputType="textPersonName"
-            tools:ignore="Autofill,LabelFor" />
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:ems="10"
+                android:hint="@string/nome"
+                android:inputType="textPersonName"
+                tools:ignore="Autofill,LabelFor" />
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -47,15 +53,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <EditText
-            android:id="@+id/TextCognome"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editCognomeWrapper"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:ems="10"
-            android:hint="@string/cognome"
-            android:inputType="textPersonName"
-            tools:ignore="Autofill,LabelFor" />
+            android:layout_height="wrap_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/TextCognome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:ems="10"
+                android:hint="@string/cognome"
+                android:inputType="textPersonName"
+                tools:ignore="Autofill,LabelFor" />
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -68,6 +79,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginTop="10dp"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="10dp"
             android:ems="10"
@@ -75,17 +87,22 @@
             android:onClick="showPopup"
             android:text="@string/sesso" />
 
-        <EditText
-            android:id="@+id/TextEta"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editEtaWrapper"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="1">
+        <EditText
+            android:id="@+id/TextEta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="10dp"
             android:ems="10"
             android:hint="@string/eta"
             android:inputType="numberDecimal"
             tools:ignore="Autofill,LabelFor" />
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
 </LinearLayout>
