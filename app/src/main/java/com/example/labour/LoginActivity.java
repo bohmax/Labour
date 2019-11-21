@@ -11,7 +11,6 @@ import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteConstraintException;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -30,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private NfcAdapter nfc;
     private PendingIntent pendingIntent = null;
     private AlertDialog alertDialog;
+    private MenuFragment menuf;
     private ProgressBar progress;
     private Snackbar sb;
     private MyDatabase mydb;
@@ -42,11 +42,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        if(savedInstanceState != null)
+        if(savedInstanceState != null) {
+            menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
             nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
-
-        getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_menu, new MenuFragment()).commit();
+        }
+        else {
+            menuf = new MenuFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_menu, menuf).commit();
+        }
         if(requestPermission(Manifest.permission.NFC, NFC_PERMISSION))
             Log.i("Funziona", "GOOD");
 
@@ -101,6 +105,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
+        getSupportFragmentManager().putFragment(savedInstanceState, "MenuFragmente", menuf);
         savedInstanceState.putBoolean("NFC_CHOISE", nfc_no_choise);
     }
 
@@ -176,7 +181,7 @@ public class LoginActivity extends AppCompatActivity {
     private void tryInsertDB(String id){
         if(id.length()>0){
             Intent i = new Intent(this, MainActivity.class);
-            if(mydb.createRecords(id, "Utente", "Prova", "M", 22) == -1)
+            if(mydb.createRecords(id, "Utente", "Prova", "M", 22) != -1)
                 i.putExtra("Exist", false);
             else
                 i.putExtra("Exist", true);

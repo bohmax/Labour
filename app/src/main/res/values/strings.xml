@@ -14,4 +14,6 @@
     <string name="speciale">Speciale</string>
     <string name="set_data">Imposta dati account</string>
     <string name="camera">camera</string>
+    <string name="imposta">Imposta</string>
+    <string name="canella">Canella</string>
 </resources>

@@ -36,14 +36,14 @@ class MyDatabase {
         return database.insert(OP_TABLE, null, values);
     }
 
-    long updateRecords(String id, String name, String cognome, String gender, int eta) throws SQLiteConstraintException {
+    long updateRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_ID, id);
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
         values.put(OP_SESSO, gender);
         values.put(OP_ETA, eta);
-        return database.update(OP_TABLE, values, "_id="+id, null);
+        return database.update(OP_TABLE, values, OP_ID+"="+id, null);
     }
 
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){
