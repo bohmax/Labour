@@ -1,11 +1,17 @@
 package com.example.labour;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.PorterDuff;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -13,24 +19,38 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.app.Activity.RESULT_OK;
 
 public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
-    protected static final int CAMERA_REQUEST = 0;
-    protected static final int GALLERY_PICTURE = 1;
+    private static final int FOTO_REQUEST = 0;
+    private Context mContext;
     private String ID;
     private MyDatabase mydb;
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
-    private CircleImageView civ;
+    private ImageView civ;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
+    }
 
     @NonNull
     @Override
@@ -78,6 +98,55 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     /*@Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MY_CAMERA_PERMISSION_CODE)
+        {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+            }
+            else
+            {
+                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
+    }*/
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FOTO_REQUEST) {
+            if (resultCode == RESULT_OK) {
+
+                Uri uri;
+                InputStream inputStream;
+                Bitmap photo;
+                if (data == null) return;
+                if((uri=data.getData())==null){// l'utente ha selezionato la camera
+                    if(data.getExtras()!=null){
+                        photo = (Bitmap) data.getExtras().get("data");
+                        civ.setImageBitmap(photo);
+                    }
+                    return;
+                }
+                //l'utente ha selezionato una foto dalla galleria
+                try {
+                    inputStream = mContext.getContentResolver().openInputStream(uri);
+                } catch (FileNotFoundException e) {
+                    Toast.makeText(mContext, "File non trovato", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                civ.setImageBitmap(BitmapFactory.decodeStream(inputStream));
+
+            }
+        }
+    }
+
+    /*@Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("nome", nome.getText().toString());
@@ -96,6 +165,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         popup.show();
     }
 
+    //button popup
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         button.setText(item.getTitle());
@@ -103,21 +173,25 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     void onImageClick(View v) {
-        //Create an Intent with action as ACTION_PICK
-        Intent intent=new Intent(Intent.ACTION_PICK);
-        // Sets the type as image/*. This ensures only components of type image are selected
-        intent.setType("image/*");
-        //We pass an extra array with the accepted mime types. This will ensure only components with these MIME types as targeted.
-        String[] mimeTypes = {"image/jpeg", "image/png"};
-        intent.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes);
-        // Launching the Intent
-        startActivityForResult(intent,CAMERA_REQUEST);
+        Intent chooserIntent;
+
+        List<Intent> intentList = new ArrayList<>();
+
+        intentList.add(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+        intentList.add(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
+
+        chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
+                    "Scatta una foto o prendila da quelle già salvate");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+
+        startActivityForResult(chooserIntent,FOTO_REQUEST);
     }
+
     //--------------------------------------------
 
     private View getElement(){
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View view = inflater.inflate(R.layout.subscribe_fragment, null);
+        @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.subscribe_fragment, null);
         button = view.findViewById(R.id.buttonsex);
         accept = view.findViewById(R.id.imposta);
         disable = view.findViewById(R.id.annulla);
@@ -125,7 +199,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         nome = view.findViewById(R.id.TextNome);
         cognome = view.findViewById(R.id.TextCognome);
         civ = view.findViewById(R.id.image);
-        civ.setColorFilter(getResources().getColor(R.color.grey) , PorterDuff.Mode.DARKEN);
+        //civ.setColorFilter(getResources().getColor(R.color.grey) , PorterDuff.Mode.DARKEN);
         accept.setOnClickListener(this);
         disable.setOnClickListener(this);
         return view;
