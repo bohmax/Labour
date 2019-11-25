@@ -1,8 +1,10 @@
 package com.example.labour;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,8 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private boolean exist = false;
-    private String user_ID;
+    private String user_ID = "default";
     private SubscribeFragment sf;
+    Button profilo;
     private MenuFragment menuf;
     private TextView tw;
 
@@ -32,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
         else {
             sf = new SubscribeFragment();
             menuf = new MenuFragment();
-            menuf.setRetainInstance(true);
             Bundle bundle = new Bundle();
             bundle.putString("ID", user_ID);
             sf.setArguments(bundle);
@@ -51,6 +53,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         tw = findViewById(R.id.text);
+        profilo = findViewById(R.id.profile);
+        profilo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getBaseContext(), ProfileActivity.class);
+                i.putExtra("ID", user_ID);
+                startActivity(i);
+            }
+        });
         String prova = "era presente nel db? " + exist + " value " + user_ID;
         tw.setText(prova);
     }

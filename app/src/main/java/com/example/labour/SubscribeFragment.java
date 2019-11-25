@@ -50,6 +50,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
+    private Bitmap bit;
     private String mCurrentPhotoPath;
 
     @Override
@@ -64,8 +65,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         View v = getElement();
         if(getArguments()!=null)
             ID = getArguments().getString("ID");
-        if (savedInstanceState!=null)
+        if (savedInstanceState!=null) {
             mCurrentPhotoPath = savedInstanceState.getString("path");
+            bit = savedInstanceState.getParcelable("img");
+            if(bit!=null)
+                civ.setImageBitmap(bit);
+        }
         mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
@@ -107,6 +112,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("path", mCurrentPhotoPath);
+        outState.putParcelable("img", bit);
     }
 
     /*@Override
@@ -143,40 +149,32 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                     //scanPic(f);
                     if ((f = handlePic(f)) != null){
                         Log.i("new path?", f.getAbsolutePath());
-                        Bitmap bitmap = getBitMap(Uri.fromFile(f));
-                        if(bitmap!=null)
-                            civ.setImageBitmap(bitmap);
+                        bit = getBitMap(Uri.fromFile(f));
+                        if(bit!=null)
+                            civ.setImageBitmap(bit);
                     }
                 } else {
                     //l'utente ha selezionato una foto dalla galleria
                     Log.i("imm", uri.toString());
-                    Bitmap bitmap = getBitMap(data.getData());
-                    if(bitmap != null){
-                        civ.setImageBitmap(bitmap);
-                        fromBitmapToFile(bitmap);
+                    bit = getBitMap(data.getData());
+                    if(bit != null){
+                        Log.i("Wut","loose");
+                        civ.setImageBitmap(bit);
+                        fromBitmapToFile(bit);
                     }
+                    if(destroyTemp())
+                        Log.i("Distrutto", "hurra");
                 }
             }
             else {
                 Log.i("Fail", "prova elimina");
-                File todestroy= new File(mCurrentPhotoPath);
-                if(todestroy.delete())
+                if(destroyTemp())
                     Log.i("Distrutto", "hurra");
                 else Log.i("STack", "overflow");
             }
 
         }
     }
-
-    /*@Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("nome", nome.getText().toString());
-        outState.putString("cognome", cognome.getText().toString());
-        outState.putString("sesso", button.getText().toString());
-        outState.putString("eta", age.getText().toString());
-        //outState.putString("nome", nome.getText().toString());
-    }*/
 
     //--------------- popup & image click -----------------
     void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
@@ -304,6 +302,63 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             Toast.makeText(mContext, "File non trovato", Toast.LENGTH_LONG).show();
             return null;
         }
-        return BitmapFactory.decodeStream(inputStream);
+        Log.i("WIdth", String.valueOf(civ.getWidth()));
+        return decodeSampledBitmapFromResource(inputStream, mContext, uri, civ.getWidth(), civ.getHeight());
     }
+
+    private boolean destroyTemp(){
+        File todestroy= new File(mCurrentPhotoPath);
+        return todestroy.delete();
+    }
+
+    //per rispettare i limiti del render da https://developer.android.com/topic/performance/graphics/load-bitmap
+    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    private static Bitmap decodeSampledBitmapFromResource(InputStream is, Context context, Uri uri, int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(is, null, options);
+
+        //dovuto a causa di un bruco
+        try {
+            is.close();
+        } catch (IOException e) {
+            return null;
+        }
+        InputStream is1 = null;
+        try {
+            is1 = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeStream(is1, null, options);
+    }
+
 }
