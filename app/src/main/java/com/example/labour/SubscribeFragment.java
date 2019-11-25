@@ -19,18 +19,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.mikhaellopez.circularimageview.CircularImageView;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +49,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private MyDatabase mydb;
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
-    private ImageView civ;
+    private CircularImageView civ;
+    private String mCurrentPhotoPath;
 
     @Override
     public void onAttach(Context context) {
@@ -58,7 +64,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         View v = getElement();
         if(getArguments()!=null)
             ID = getArguments().getString("ID");
-
+        if (savedInstanceState!=null)
+            mCurrentPhotoPath = savedInstanceState.getString("path");
         mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
@@ -76,7 +83,6 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             if(button.getText().toString().equals("SESSO"))
                 sesso = "Uomo";
             else sesso = button.getText().toString();
-            Log.i("cognome", cognome.getText().toString());
             if(age.getText().toString().length()!=0)
                 eta =age.getText().toString();
             mydb.updateRecords(ID,nome.getText().toString(),cognome.getText().toString(),sesso, Integer.parseInt(eta));
@@ -95,6 +101,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 dialog.getWindow().setLayout(width, height);
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("path", mCurrentPhotoPath);
     }
 
     /*@Override
@@ -119,30 +131,40 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.i("richiesta", String.valueOf(requestCode));
+        Log.i("result", String.valueOf(resultCode));
         if (requestCode == FOTO_REQUEST) {
             if (resultCode == RESULT_OK) {
 
                 Uri uri;
-                InputStream inputStream;
-                Bitmap photo;
-                if (data == null) return;
-                if((uri=data.getData())==null){// l'utente ha selezionato la camera
-                    if(data.getExtras()!=null){
-                        photo = (Bitmap) data.getExtras().get("data");
-                        civ.setImageBitmap(photo);
+                if(data==null || (uri=data.getData())==null){// l'utente ha selezionato la camera
+                    Log.i("suces", "well");
+                    File f = new File(mCurrentPhotoPath);
+                    //scanPic(f);
+                    if ((f = handlePic(f)) != null){
+                        Log.i("new path?", f.getAbsolutePath());
+                        Bitmap bitmap = getBitMap(Uri.fromFile(f));
+                        if(bitmap!=null)
+                            civ.setImageBitmap(bitmap);
                     }
-                    return;
+                } else {
+                    //l'utente ha selezionato una foto dalla galleria
+                    Log.i("imm", uri.toString());
+                    Bitmap bitmap = getBitMap(data.getData());
+                    if(bitmap != null){
+                        civ.setImageBitmap(bitmap);
+                        fromBitmapToFile(bitmap);
+                    }
                 }
-                //l'utente ha selezionato una foto dalla galleria
-                try {
-                    inputStream = mContext.getContentResolver().openInputStream(uri);
-                } catch (FileNotFoundException e) {
-                    Toast.makeText(mContext, "File non trovato", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                civ.setImageBitmap(BitmapFactory.decodeStream(inputStream));
-
             }
+            else {
+                Log.i("Fail", "prova elimina");
+                File todestroy= new File(mCurrentPhotoPath);
+                if(todestroy.delete())
+                    Log.i("Distrutto", "hurra");
+                else Log.i("STack", "overflow");
+            }
+
         }
     }
 
@@ -174,10 +196,24 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
 
     void onImageClick(View v) {
         Intent chooserIntent;
-
         List<Intent> intentList = new ArrayList<>();
+        File photoFile = null;
 
-        intentList.add(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+                photoFile = createImageFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        if (photoFile != null) {
+            Uri photoURI = FileProvider.getUriForFile(mContext,
+                    mContext.getPackageName() + ".provider",
+                    photoFile);
+            Log.i("Pavido", photoURI.toString());
+            camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoURI);
+            intentList.add(camera);
+        }
+
         intentList.add(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
 
         chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
@@ -199,9 +235,75 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         nome = view.findViewById(R.id.TextNome);
         cognome = view.findViewById(R.id.TextCognome);
         civ = view.findViewById(R.id.image);
-        //civ.setColorFilter(getResources().getColor(R.color.grey) , PorterDuff.Mode.DARKEN);
         accept.setOnClickListener(this);
         disable.setOnClickListener(this);
         return view;
+    }
+
+    private File createImageFile() throws IOException {
+        File storageDir = new File(mContext.getApplicationInfo().dataDir+"/files");
+        Log.i("Path", storageDir.getAbsolutePath());
+        File image = File.createTempFile(
+                "ptofile_temp",  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        mCurrentPhotoPath = image.getAbsolutePath();
+        Log.i("Path", mCurrentPhotoPath);
+        return image;
+    }
+
+    //#TO DO: CREARE ASYNC TASK PER GESTIRE AL MEGLIO QUESTI TASK
+    private void scanPic(File newpick) {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri contentUri = Uri.fromFile(newpick);
+        mediaScanIntent.setData(contentUri);
+        mContext.sendBroadcast(mediaScanIntent);
+    }
+
+    //rinomina il vacchio file, andando a eliminarlo solo dopo che il nuovo file viene rinominato correttamente
+    private File handlePic(File newpic){
+        String picpath = mContext.getApplicationInfo().dataDir+"/files/profile.jpg";
+        File old = new File(picpath);
+        File temp = new File(picpath + "_temp.jpg");
+
+        if(old.exists()) {
+            if (!old.renameTo(temp)) {
+                Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
+                return null;
+            }
+        }
+        if(newpic.renameTo(old)){
+            boolean junk = temp.delete();
+            return old;
+        }
+        else{ //se fallisce rimettiti se possibile nelle cond di partenza
+            boolean b = old.renameTo(new File(picpath));
+            Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
+        }
+        return null;
+    }
+
+    private boolean fromBitmapToFile(Bitmap bitmap){
+        OutputStream out;
+        try {
+            out = new FileOutputStream(mContext.getApplicationInfo().dataDir+"/files/profile.jpg");
+        } catch (FileNotFoundException e) {
+            Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        return true;
+    }
+
+    private Bitmap getBitMap(Uri uri){
+        InputStream inputStream;
+        try {
+            inputStream = mContext.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            Toast.makeText(mContext, "File non trovato", Toast.LENGTH_LONG).show();
+            return null;
+        }
+        return BitmapFactory.decodeStream(inputStream);
     }
 }

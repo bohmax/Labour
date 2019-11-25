@@ -19,6 +19,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progress;
     private Snackbar sb;
     private MyDatabase mydb;
+    EditText test;
 
     boolean nfc_no_choise = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
     final int NFC_PERMISSION = 1;
@@ -41,7 +43,13 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        test = findViewById(R.id.test);
+        test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tryInsertDB(test.getText().toString());
+            }
+        });
         if(savedInstanceState != null) {
             menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
             nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
