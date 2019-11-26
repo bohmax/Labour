@@ -47,8 +47,8 @@ class MyDatabase {
     }
 
     String[] searchById(String id) {
-        Log.i("id", id);
         Cursor cur = database.rawQuery("SELECT * FROM " + OP_TABLE + " WHERE " + OP_ID + "=?", new String[]{id});
+        cur.moveToFirst();
         String[] elem ={
             cur.getString(cur.getColumnIndex(OP_NOME)),
                 cur.getString(cur.getColumnIndex(OP_COGNOME)),

@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onImageClick(View v) {
-        sf.onImageClick(v);
+        sf.onImageClick();
     }
 
 }
