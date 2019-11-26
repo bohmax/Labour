@@ -1,6 +1,8 @@
 package com.example.labour;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -8,11 +10,11 @@ import android.util.Log;
 
 public class Database extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "DBName";
+    private static final String DATABASE_NAME = "LabourDB";
 
     private static final int DATABASE_VERSION = 2;
 
-    private static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS Operai ( _ID TEXT PRIMARY KEY, nome TEXT not null, cognome TEXT not null, sesso TEXT not null,età INT not null);";
+    private static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS Operai (_ID TEXT PRIMARY KEY, nome TEXT not null, cognome TEXT not null, sesso TEXT not null, eta INT not null);";
 
     private static Database Istance;
 
@@ -29,7 +31,21 @@ public class Database extends SQLiteOpenHelper {
     // Method is called during creation of the database
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(DATABASE_CREATE);
+        try {
+            db.execSQL(DATABASE_CREATE);
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        ContentValues values = new ContentValues();
+        values.put("_ID", "pippotest");
+        values.put("nome", "");
+        values.put("cognome", "");
+        values.put("sesso", "Uomo");
+        values.put("eta", 13);
+        if((db.insert("Operai",null,values))!=-1)
+            Log.i("inserito","wut");
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.example.labour;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -14,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private boolean exist = false;
-    private String user_ID = "default";
+    private String user_ID = "pippotest";
     private SubscribeFragment sf;
     Button profilo;
     private MenuFragment menuf;
@@ -26,6 +25,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Bundle extra = getIntent().getExtras();
+        if(extra != null) {
+            exist = extra.getBoolean("Exist");
+            user_ID = extra.getString("ID");
+
+        }
+
         if(savedInstanceState!=null){
             menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
             SubscribeFragment fragmentA =(SubscribeFragment) getSupportFragmentManager().findFragmentByTag("SubFG TAG");
@@ -44,12 +49,6 @@ public class MainActivity extends AppCompatActivity {
                 sf.setCancelable(false);
                 sf.show(getSupportFragmentManager(), "SubFG TAG");
             }
-        }
-
-        if(extra != null) {
-            exist = extra.getBoolean("Exist");
-            user_ID = extra.getString("ID");
-
         }
 
         tw = findViewById(R.id.text);

@@ -2,8 +2,9 @@ package com.example.labour;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteConstraintException;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 class MyDatabase {
 
@@ -15,7 +16,7 @@ class MyDatabase {
     private final static String OP_NOME="nome";
     private final static String OP_COGNOME="cognome";
     private final static String OP_SESSO="sesso";
-    private final static String OP_ETA="età";
+    private final static String OP_ETA="eta";
 
     MyDatabase(Context context){
         if (database == null) {
@@ -38,12 +39,24 @@ class MyDatabase {
 
     long updateRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
-        values.put(OP_ID, id);
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
         values.put(OP_SESSO, gender);
         values.put(OP_ETA, eta);
-        return database.update(OP_TABLE, values, OP_ID+"="+id, null);
+        return database.update(OP_TABLE, values, OP_ID+"=?", new String[]{id});
+    }
+
+    String[] searchById(String id) {
+        Log.i("id", id);
+        Cursor cur = database.rawQuery("SELECT * FROM " + OP_TABLE + " WHERE " + OP_ID + "=?", new String[]{id});
+        String[] elem ={
+            cur.getString(cur.getColumnIndex(OP_NOME)),
+                cur.getString(cur.getColumnIndex(OP_COGNOME)),
+                        cur.getString(cur.getColumnIndex(OP_ETA)),
+                                cur.getString(cur.getColumnIndex(OP_SESSO))
+        };
+        cur.close();
+        return elem;
     }
 
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){

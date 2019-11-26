@@ -189,7 +189,7 @@ public class LoginActivity extends AppCompatActivity {
     private void tryInsertDB(String id){
         if(id.length()>0){
             Intent i = new Intent(this, MainActivity.class);
-            if(mydb.createRecords(id, "Utente", "Prova", "M", 22) != -1)
+            if(mydb.createRecords(id, "Mario", "Rossi", "Uomo", 22) != -1)
                 i.putExtra("Exist", false);
             else
                 i.putExtra("Exist", true);

@@ -91,7 +91,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             if(age.getText().toString().length()!=0)
                 eta =age.getText().toString();
             mydb.updateRecords(ID,nome.getText().toString(),cognome.getText().toString(),sesso, Integer.parseInt(eta));
-        } else getDialog().dismiss();
+        }
+        getDialog().dismiss();
     }
 
     @Override

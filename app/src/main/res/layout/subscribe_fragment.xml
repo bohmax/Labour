@@ -7,7 +7,8 @@
     android:padding="10dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:windowSoftInputMode="adjustResize|adjustPan">
 
 <LinearLayout
     android:id="@+id/first_linear"
@@ -26,16 +27,16 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center">
+
         <com.mikhaellopez.circularimageview.CircularImageView
             android:id="@+id/image"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:scaleType="centerCrop"
             android:layout_centerInParent="true"
-            app:civ_border="false"
+            android:src="@drawable/worker"
             android:tint="@color/grey"
-            android:src="@drawable/icon" >
-        </com.mikhaellopez.circularimageview.CircularImageView>
+            app:civ_border="false"
+            android:contentDescription="@string/sfondo"/>
 
         <ImageButton
             android:id="@+id/camera"
@@ -72,7 +73,7 @@
                 android:layout_margin="5dp"
                 android:ems="10"
                 android:hint="@string/nome"
-                android:inputType="textPersonName"
+                android:inputType="textCapSentences"
                 tools:ignore="Autofill,LabelFor" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
@@ -94,7 +95,7 @@
                 android:layout_margin="5dp"
                 android:ems="10"
                 android:hint="@string/cognome"
-                android:inputType="textPersonName"
+                android:inputType="textCapSentences"
                 tools:ignore="Autofill,LabelFor" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
