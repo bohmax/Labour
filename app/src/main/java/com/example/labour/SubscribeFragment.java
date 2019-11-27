@@ -1,9 +1,11 @@
 package com.example.labour;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -66,6 +68,13 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             File pic = new File(picpath);
             if(pic.exists())
                 civ.setImageBitmap(File_utility.getBitMap(mContext, Uri.fromFile(pic), 150, 150));
+            String nomestr = getArguments().getString("nome");
+            if (nomestr != null){ //se nomestr è diverso da null anche gli altri elementi sono stati settati
+                nome.setText(nomestr);
+                cognome.setText(getArguments().getString("cognome"));
+                age.setText(getArguments().getString("anni"));
+                button.setText(getArguments().getString("sesso"));
+            }
         }
         if (savedInstanceState!=null)
             mCurrentPhotoPath = savedInstanceState.getString("path");
@@ -83,7 +92,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public void onClick(View v) {
         if (v == accept) {
             String sesso,eta="0";
-            if(button.getText().toString().equals("SESSO"))
+            if(button.getText().toString().equals("Sesso"))
                 sesso = "Uomo";
             else sesso = button.getText().toString();
             if(age.getText().toString().length()!=0)
@@ -104,6 +113,15 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 int height = ViewGroup.LayoutParams.MATCH_PARENT;
                 dialog.getWindow().setLayout(width, height);
             }
+        }
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        final Activity activity = getActivity();
+        if (activity instanceof DialogInterface.OnDismissListener) {
+            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
         }
     }
 

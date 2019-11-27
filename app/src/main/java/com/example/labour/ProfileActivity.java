@@ -1,9 +1,9 @@
 package com.example.labour;
 
-import android.database.Cursor;
-import android.graphics.Bitmap;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -15,14 +15,14 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements DialogInterface.OnDismissListener {
 
     private String user_ID="pippotest";
     private String[] userInfo;
     private String pathfile;
     private SubscribeFragment sf;
     private MenuFragment menuf;
-    private TextView nome, anni, sesso;
+    private TextView nome, carratteristiche;
     private CircularImageView civ;
     private MyDatabase db;
 
@@ -30,6 +30,12 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.profile_layout);
+        //set view
+        db = new MyDatabase(getApplicationContext());
+        nome = findViewById(R.id.nome);
+        carratteristiche = findViewById(R.id.caratteristiche);
+        civ = findViewById(R.id.pic);
+
         Bundle extra = getIntent().getExtras();
         if (extra != null) {
             user_ID = extra.getString("ID");
@@ -41,18 +47,14 @@ public class ProfileActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             menuf = (MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
-            SubscribeFragment fragmentA = (SubscribeFragment) getSupportFragmentManager().findFragmentByTag("SubFG TAG");
-            if (fragmentA != null)
-                sf =(SubscribeFragment) getSupportFragmentManager().getFragment(savedInstanceState, "SubscribeFragment");
-        } else
+            sf = (SubscribeFragment) getSupportFragmentManager().findFragmentByTag("SubFG TAG");
+            if (sf != null)
+                sf = (SubscribeFragment) getSupportFragmentManager().getFragment(savedInstanceState, "SubscribeFragment");
+        } else {
             menuf = new MenuFragment();
-
-
-        db = new MyDatabase(getApplicationContext());
-        nome = findViewById(R.id.nome);
-        anni = findViewById(R.id.anni);
-        sesso = findViewById(R.id.sesso);
-        civ = findViewById(R.id.pic);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_menu, menuf).commit();
+        }
 
         setView(db.searchById(user_ID));
 
@@ -70,16 +72,22 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setView(String[] str){
         userInfo = str;
-        if(str[0].length()!=0 || str[1].length()!=0)
+        if (str[0].length()!=0 || str[1].length()!=0)
             nome.setText(String.format("%s %s", str[0], str[1]));
-        if(str[2].length()!=0)
-            anni.setText(String.format("%s Anni", str[2]));
-        if(str[3].length()<=4)//diverso da uomo
-            sesso.setText(str[3]);
+        carratteristiche.setText(String.format("%s Anni, %s", str[2], str[3]));
+    }
 
+    @Override
+    public void onDismiss(final DialogInterface dialog) {
+        setView(db.searchById(user_ID));
+        File pic = new File(pathfile);
+        if(pic.exists())
+            civ.setImageBitmap(File_utility.getBitMap(getApplicationContext(), Uri.fromFile(pic), 120, 120));
     }
 
     public void onEditClick(View v){
+        if(sf==null)
+            sf = new SubscribeFragment();
         Bundle bundle = new Bundle();
         bundle.putString("ID", user_ID);
         bundle.putString("nome", userInfo[0]);
@@ -87,10 +95,15 @@ public class ProfileActivity extends AppCompatActivity {
         bundle.putString("anni", userInfo[2]);
         bundle.putString("sesso", userInfo[3]);
         sf.setArguments(bundle);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_menu, menuf).commit();
-        sf = new SubscribeFragment();
         sf.setCancelable(false);
         sf.show(getSupportFragmentManager(), "SubFG TAG");
+    }
+
+    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+        sf.showPopup(v);
+    }
+
+    public void onImageClick(View v) {
+        sf.onImageClick();
     }
 }
