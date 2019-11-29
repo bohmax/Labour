@@ -1,10 +1,9 @@
 package com.example.labour;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +18,15 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 
-public class ProfileFragment extends Fragment implements DialogInterface.OnDismissListener {
+public class ProfileFragment extends Fragment {
 
     private String user_ID="pippotest";
     private String[] userInfo;
-    private String pathfile;
+    private String pathfolder;
+    private String pathpic;
     private FragmentManager fm;
     private SubscribeFragment sf;
     private Context context;
-    private MenuFragment menuf;
     private TextView nome, carratteristiche;
     private CircularImageView civ;
     private MyDatabase db;
@@ -44,19 +43,15 @@ public class ProfileFragment extends Fragment implements DialogInterface.OnDismi
         Bundle extra = this.getArguments();
         if (extra != null) {
             user_ID = extra.getString("ID");
-            pathfile = Environment.getDataDirectory()+"/files/profile_"+user_ID+".jpg";
+            pathfolder = extra.getString("Path_Photo");
+            pathpic = pathfolder + "profile_"+user_ID+".jpg";
         }
 
         if (savedInstanceState != null) {
-            //menuf = (MenuFragment) fm.getFragment(savedInstanceState, "MenuFragmente");
             sf = (SubscribeFragment) fm.findFragmentByTag("SubFG TAG");
             if (sf != null)
                 sf = (SubscribeFragment) fm.getFragment(savedInstanceState, "SubscribeFragment");
-        } /*else {
-            menuf = new MenuFragment();
-            fm.beginTransaction()
-                    .add(R.id.fragment_menu, menuf).commit();
-        }*/
+        }
 
     }
 
@@ -66,7 +61,7 @@ public class ProfileFragment extends Fragment implements DialogInterface.OnDismi
         nome = view.findViewById(R.id.nome);
         carratteristiche = view.findViewById(R.id.caratteristiche);
         civ = view.findViewById(R.id.pic);
-        File pic = new File(pathfile);
+        File pic = new File(pathpic);
         if(pic.exists())
             civ.setImageBitmap(File_utility.getBitMap(context, Uri.fromFile(pic), 120, 120));
         setView(db.searchById(user_ID));
@@ -82,10 +77,7 @@ public class ProfileFragment extends Fragment implements DialogInterface.OnDismi
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        //fm.putFragment(outState, "MenuFragmente", menuf);
-        SubscribeFragment fragmentA =(SubscribeFragment) fm.findFragmentByTag("SubFG TAG");
-        if (fragmentA != null)
+        if (fm.findFragmentByTag("SubFG TAG") != null)
             fm.putFragment(outState, "SubscribeFragment", sf);
     }
 
@@ -94,17 +86,16 @@ public class ProfileFragment extends Fragment implements DialogInterface.OnDismi
         if (str[0].length()!=0 || str[1].length()!=0)
             nome.setText(String.format("%s %s", str[0], str[1]));
         carratteristiche.setText(String.format("%s Anni, %s", str[2], str[3]));
-    }
-
-    @Override
-    public void onDismiss(final DialogInterface dialog) {
-        setView(db.searchById(user_ID));
-        File pic = new File(pathfile);
+        File pic = new File(pathpic);
         if(pic.exists())
             civ.setImageBitmap(File_utility.getBitMap(context, Uri.fromFile(pic), 120, 120));
     }
 
-    public void onEditClick(View v){
+    void Dismiss() {
+        setView(db.searchById(user_ID));
+    }
+
+    void onEditClick(){
         if(sf==null)
             sf = new SubscribeFragment();
         Bundle bundle = new Bundle();
@@ -113,16 +104,17 @@ public class ProfileFragment extends Fragment implements DialogInterface.OnDismi
         bundle.putString("cognome", userInfo[1]);
         bundle.putString("anni", userInfo[2]);
         bundle.putString("sesso", userInfo[3]);
+        bundle.putString("Path_Folder", pathfolder);
         sf.setArguments(bundle);
         sf.setCancelable(false);
         sf.show(fm, "SubFG TAG");
     }
 
-    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+    void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         sf.showPopup(v);
     }
 
-    public void onImageClick(View v) {
+    void onImageClick() {
         sf.onImageClick();
     }
 }

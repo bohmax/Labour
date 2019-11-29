@@ -18,6 +18,7 @@ public class PackageFragment extends Fragment {
 
     private boolean exist = false;
     private String user_ID = "pippotest";
+    private String pathfile;
     private SubscribeFragment sf;
     private FragmentManager fm;
     private TextView tw;
@@ -36,48 +37,25 @@ public class PackageFragment extends Fragment {
         if (extra != null) {
             exist = extra.getBoolean("Exist");
             user_ID = extra.getString("ID");
+            pathfile = extra.getString("Path_Photo");
         }
 
 
         if (savedInstanceState != null) {
-            //menuf = (MenuFragment) fm.getFragment(savedInstanceState, "MenuFragmente");
-            SubscribeFragment fragmentA = (SubscribeFragment) fm.findFragmentByTag("SubFG TAG");
+            SubscribeFragment fragmentA = (SubscribeFragment) fm.findFragmentByTag("SubFG TAG1");
             if (fragmentA != null)
                 sf = (SubscribeFragment) fm.getFragment(savedInstanceState, "SubscribeFragment");
         } else {
             sf = new SubscribeFragment();
-            //menuf = new MenuFragment();
             Bundle bundle = new Bundle();
             bundle.putString("ID", user_ID);
+            bundle.putString("Path_Folder", pathfile);
             sf.setArguments(bundle);
-            //fm.beginTransaction().add(R.id.fragment_menu, menuf).commit();
             if (!exist) {
                 sf.setCancelable(false);
-                sf.show(fm, "SubFG TAG");
+                sf.show(fm, "SubFG TAG1");
             }
         }
-
-        /*profilo = findViewById(R.id.profile);
-
-        profilo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), ProfileActivity.class);
-                i.putExtra("ID", user_ID);
-                startActivity(i);
-            }
-        });
-
-        passi = findViewById(R.id.passi);
-
-        passi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), WorkActivity.class);
-                i.putExtra("ID", user_ID);
-                startActivity(i);
-            }
-        });*/
     }
 
     //chiamata dopo la on create
@@ -97,9 +75,7 @@ public class PackageFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        //fm.putFragment(outState, "MenuFragmente", menuf);
-        SubscribeFragment fragmentA =(SubscribeFragment) fm.findFragmentByTag("SubFG TAG");
-        if (fragmentA != null)
+        if (fm.findFragmentByTag("SubFG TAG1") != null)
             fm.putFragment(outState, "SubscribeFragment", sf);
     }
 

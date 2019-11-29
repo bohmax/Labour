@@ -109,8 +109,12 @@ class File_utility {
      * @return true se è stato eliminato, falso altrimenti
      */
     static boolean destroyTemp(String path){
-        File todestroy= new File(path);
-        return todestroy.delete();
+        if(path!=null) {
+            File todestroy = new File(path);
+            if (todestroy.exists())
+                return todestroy.delete();
+            return true;
+        } return true;
     }
 
     //per rispettare i limiti del render da https://developer.android.com/topic/performance/graphics/load-bitmap

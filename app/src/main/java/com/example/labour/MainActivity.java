@@ -1,7 +1,7 @@
 package com.example.labour;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, DialogInterface.OnDismissListener {
 
     private String user_ID="pippotest";
     private boolean exist;
@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             Bundle bund = new Bundle();
             bund.putString("ID", user_ID);
+            bund.putString("Path_Photo", getApplicationInfo().dataDir+"/files/");
             bund.putBoolean("Exist", exist);
             packf.setArguments(bund);
             proff.setArguments(bund);
@@ -116,6 +117,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return false;
     }
 
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        proff.Dismiss();
+    }
+
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         if(active instanceof PackageFragment)
             packf.showPopup(v);
@@ -127,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if(active instanceof PackageFragment)
             packf.onImageClick(v);
         else if (active instanceof ProfileFragment)
-            proff.onImageClick(v);
+            proff.onImageClick();
     }
+
+    public void onEditClick(View v){
+        proff.onEditClick();
+    }
+
 }

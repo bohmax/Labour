@@ -52,6 +52,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private Bitmap bit;
     private String mCurrentPhotoPath;
     private String picpath;
+    private String picfolder;
 
     @Override
     public void onAttach(Context context) {
@@ -66,7 +67,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
 
         if(getArguments()!=null){
             ID = getArguments().getString("ID");
-            picpath = mContext.getApplicationInfo().dataDir+"/files/profile_"+ID+".jpg";
+            picfolder = getArguments().getString("Path_Folder");
+            picpath = picfolder + "profile_"+ ID +".jpg";
             File pic = new File(picpath);
             if(pic.exists())
                 civ.setImageBitmap(File_utility.getBitMap(mContext, Uri.fromFile(pic), 150, 150));
@@ -169,12 +171,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                     File f = new File(mCurrentPhotoPath);
                     if ((f = File_utility.handlePic(picpath, f)) != null){
                         Log.i("new path?", f.getAbsolutePath());
-                        if((bit=File_utility.getBitMap(mContext, Uri.fromFile(f), civ.getWidth(), civ.getHeight()))!=null)
+                        if((bit=File_utility.getBitMap(mContext, Uri.fromFile(f), 150, 150))!=null)
                             civ.setImageBitmap(bit);
                     } else Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
                 } else {
                     //l'utente ha selezionato una foto dalla galleria
-                    if((bit=File_utility.getBitMap(mContext, data.getData(), civ.getWidth(), civ.getHeight()))!=null){
+                    if((bit=File_utility.getBitMap(mContext, data.getData(), 150, 150))!=null){
                         Log.i("Wut","loose");
                         civ.setImageBitmap(bit);
                         if(!File_utility.fromBitmapToFile(bit, picpath))
@@ -232,7 +234,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
 
         Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
-            photoFile = File_utility.createImageFile(mContext.getApplicationInfo().dataDir+"/files");
+            photoFile = File_utility.createImageFile(picfolder);
             mCurrentPhotoPath = photoFile.getAbsolutePath();
         } catch (IOException ex) {
             Toast.makeText(mContext, "Impossibile creare l'immagine", Toast.LENGTH_SHORT).show();
