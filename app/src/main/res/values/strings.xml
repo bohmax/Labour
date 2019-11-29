@@ -20,4 +20,7 @@
     <string name="anni">23 Anni</string>
     <string name="mario_rossi">Mario Rossi</string>
     <string name="caratteristiche">22 Anni, Uomo</string>
+    <string name="passi">Ti mancano: </string>
+    <string name="pacchi">Pacchi</string>
+    <string name="lavoro">Lavoro</string>
 </resources>

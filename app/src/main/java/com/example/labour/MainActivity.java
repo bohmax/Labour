@@ -1,85 +1,132 @@
 package com.example.labour;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-    private boolean exist = false;
-    private String user_ID = "pippotest";
-    private SubscribeFragment sf;
-    Button profilo;
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private String user_ID="pippotest";
+    private boolean exist;
     private MenuFragment menuf;
-    private TextView tw;
+    private PackageFragment packf = new PackageFragment();
+    private WorkFragment workf = new WorkFragment();
+    private ProfileFragment proff = new ProfileFragment();
+    private Fragment active = packf;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_activity);
 
         Bundle extra = getIntent().getExtras();
-        if(extra != null) {
+        if (extra != null) {
             exist = extra.getBoolean("Exist");
             user_ID = extra.getString("ID");
-
         }
 
-        if(savedInstanceState!=null){
-            menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
-            SubscribeFragment fragmentA =(SubscribeFragment) getSupportFragmentManager().findFragmentByTag("SubFG TAG");
-            if (fragmentA != null)
-                sf =(SubscribeFragment) getSupportFragmentManager().getFragment(savedInstanceState, "SubscribeFragment");
+        if (savedInstanceState != null){
+            menuf = (MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
+            packf = (PackageFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Package");
+            workf = (WorkFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Passi");
+            proff = (ProfileFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Profilo");
+            Log.i("Dolore", "msg " + savedInstanceState.getInt("Active"));
+            switch (savedInstanceState.getInt("Active")) {
+                case 1: {
+                    active = packf;
+                    break;
+                }
+                case 2: {
+                    active = workf;
+                    break;
+                }
+                case 3: {
+                    active = proff;
+                    break;
+                }
+            }
         }
         else {
-            sf = new SubscribeFragment();
             menuf = new MenuFragment();
-            Bundle bundle = new Bundle();
-            bundle.putString("ID", user_ID);
-            sf.setArguments(bundle);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_menu, menuf).commit();
-            if(!exist){
-                sf.setCancelable(false);
-                sf.show(getSupportFragmentManager(), "SubFG TAG");
-            }
+            packf = new PackageFragment();
+            workf = new WorkFragment();
+            proff = new ProfileFragment();
+
+            Bundle bund = new Bundle();
+            bund.putString("ID", user_ID);
+            bund.putBoolean("Exist", exist);
+            packf.setArguments(bund);
+            proff.setArguments(bund);
+
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_menu, menuf).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_space, proff, "3").hide(proff).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_space, workf, "2").hide(workf).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_space, packf, "1").commit();
+            active = packf;
         }
 
-        tw = findViewById(R.id.text);
-        profilo = findViewById(R.id.profile);
-        profilo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), ProfileActivity.class);
-                i.putExtra("ID", user_ID);
-                startActivity(i);
-            }
-        });
-        String prova = "era presente nel db? " + exist + " value " + user_ID;
-        tw.setText(prova);
+        BottomNavigationView navigation = findViewById(R.id.bottom);
+        navigation.setOnNavigationItemSelectedListener(this);
+
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         getSupportFragmentManager().putFragment(outState, "MenuFragmente", menuf);
-        SubscribeFragment fragmentA =(SubscribeFragment) getSupportFragmentManager().findFragmentByTag("SubFG TAG");
-        if (fragmentA != null)
-            getSupportFragmentManager().putFragment(outState, "SubscribeFragment", sf);
+        getSupportFragmentManager().putFragment(outState, "Package", packf);
+        getSupportFragmentManager().putFragment(outState, "Passi", workf);
+        getSupportFragmentManager().putFragment(outState, "Profilo", proff);
+        if(active instanceof PackageFragment)
+            outState.putInt("Active", 1);
+        else if (active instanceof ProfileFragment)
+            outState.putInt("Active", 3);
+        else outState.putInt("Active", 2);
+
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.seleziona: {
+                getSupportFragmentManager().beginTransaction().hide(active).show(packf).commit();
+                active = packf;
+                return true;
+            }
+            case R.id.passi:{
+                getSupportFragmentManager().beginTransaction().hide(active).show(workf).commit();
+                active = workf;
+                return true;
+            }
+            case R.id.profilo:{
+                getSupportFragmentManager().beginTransaction().hide(active).show(proff).commit();
+                active = proff;
+                return true;
+            }
+        }
+        return false;
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
-        sf.showPopup(v);
+        if(active instanceof PackageFragment)
+            packf.showPopup(v);
+        else if (active instanceof ProfileFragment)
+            proff.showPopup(v);
     }
 
     public void onImageClick(View v) {
-        sf.onImageClick();
+        if(active instanceof PackageFragment)
+            packf.onImageClick(v);
+        else if (active instanceof ProfileFragment)
+            proff.onImageClick(v);
     }
-
 }

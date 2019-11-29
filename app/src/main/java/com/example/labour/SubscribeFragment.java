@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -85,7 +87,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         builder.setMessage("Altrimenti si può continuare a lavorare in maniera quasi anonima");
         builder.setView(v);
 
-        return builder.create();
+        Dialog dial = builder.create();
+
+        Objects.requireNonNull(dial.getWindow()).setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        return dial;
     }
 
     @Override
