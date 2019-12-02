@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private WorkFragment workf = new WorkFragment();
     private ProfileFragment proff = new ProfileFragment();
     private Fragment active = packf;
+    private boolean update_profiledata;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -119,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        proff.Dismiss();
+        if (update_profiledata)
+            proff.Dismiss();
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
@@ -138,6 +140,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public void onEditClick(View v){
         proff.onEditClick();
+    }
+
+    public void setCancel(boolean update){
+        update_profiledata = update;
     }
 
 }

@@ -53,6 +53,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private String mCurrentPhotoPath;
     private String picpath;
     private String picfolder;
+    private boolean button_pressed; //true se l'utente preme imposta, falsa altrimenti
 
     @Override
     public void onAttach(Context context) {
@@ -105,8 +106,9 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             if(age.getText().toString().length()!=0)
                 eta =age.getText().toString();
             mydb.updateRecords(ID,nome.getText().toString(),cognome.getText().toString(),sesso, Integer.parseInt(eta));
+            button_pressed = true;
         }
-        getDialog().dismiss();
+        dismiss();
     }
 
     @Override
@@ -128,6 +130,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         super.onDismiss(dialog);
         final Activity activity = getActivity();
         if (activity instanceof DialogInterface.OnDismissListener) {
+            MainActivity ma = (MainActivity) activity;
+            ma.setCancel(button_pressed);
             ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
         }
     }
