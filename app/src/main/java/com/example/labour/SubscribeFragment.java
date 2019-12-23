@@ -239,7 +239,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        //
         Intent chooserIntent;
         List<Intent> intentList = new ArrayList<>();
 
