@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
-        if(active instanceof PackageFragment)
+        if(active instanceof PackageFragment) //avrei anche potuto fare in modo che implementino un interfaccio, ma ho preferito questo approccio
             packf.showPopup(v);
         else if (active instanceof ProfileFragment)
             proff.showPopup(v);

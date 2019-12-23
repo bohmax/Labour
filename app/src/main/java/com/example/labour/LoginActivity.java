@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -20,22 +21,23 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ProgressBar;
+//import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements TaskListener {
 
     private NfcAdapter nfc;
     private PendingIntent pendingIntent = null;
     private AlertDialog alertDialog;
     private MenuFragment menuf;
-    private ProgressBar progress;
+    //private ProgressBar progress;
     private Snackbar sb;
     private MyDatabase mydb;
     EditText test;
 
+    boolean serverrequest = false; //per sapere se l'utente vuole interagire con il server
     boolean nfc_no_choise = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
     final int NFC_PERMISSION = 1;
 
@@ -47,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         test.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tryInsertDB(test.getText().toString());
+                richiediAccesso(test.getText().toString());
             }
         });
         if(savedInstanceState != null) {
@@ -92,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onResume();
         if(nfc != null) {
             boolean pref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("NFC", true);
+            serverrequest = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("CONNECT", false);
             Log.i("preso", String.valueOf(pref));
             if (nfc.isEnabled()) nfc.enableForegroundDispatch(this, pendingIntent, null, null);
             else if(!pref) sb.dismiss();
@@ -123,7 +126,7 @@ public class LoginActivity extends AppCompatActivity {
 
         NdefMessage[] messages = GetLogin_ID.getNdefMessages(intent);
         if(messages != null){
-            tryInsertDB(GetLogin_ID.getNFCPayload(messages[0]));
+            richiediAccesso(GetLogin_ID.getNFCPayload(messages[0]));
         } else
             Log.i("Empy", "empty text!");
     }
@@ -152,7 +155,7 @@ public class LoginActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode){
             case KeyEvent.KEYCODE_ENTER: {
-                tryInsertDB(GetLogin_ID.get_ID());
+                richiediAccesso(GetLogin_ID.get_ID());
                 break;
             }
             case (KeyEvent.KEYCODE_BACK): {
@@ -187,14 +190,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void tryInsertDB(String id){
-        if(id.length()>0){
-            Intent i = new Intent(this, MainActivity.class);
-            if(mydb.createRecords(id, "Mario", "Rossi", "Uomo", 22) != -1)
-                i.putExtra("Exist", false);
-            else
-                i.putExtra("Exist", true);
-            i.putExtra("ID", id);
-            startActivity(i);
+        Intent i = new Intent(this, MainActivity.class);
+        if(mydb.createRecords(id, "Mario", "Rossi", "Uomo", 22) != -1)
+            i.putExtra("Exist", false);
+        else
+            i.putExtra("Exist", true);
+        i.putExtra("ID", id);
+        startActivity(i);
+    }
+
+    private void richiediAccesso(String id){
+        if(id.length()>0) {
+            if (serverrequest) {
+                new ServerRequest(this).execute(id);
+            } else tryInsertDB(id);
         }
     }
 
@@ -227,4 +236,12 @@ public class LoginActivity extends AppCompatActivity {
         return alertDialogBuilder.create();
     }
 
+    //chiamata dall'asynctask quando finisce
+    @Override
+    public void serverTask(boolean answer, String id) {
+        if(answer)
+            tryInsertDB(id);
+        else
+            Toast.makeText(this, "Impossibile contattare il server, riprovare.", Toast.LENGTH_LONG).show();
+    }
 }

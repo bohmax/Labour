@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-//#TO DO: CREARE ASYNC TASK PER GESTIRE AL MEGLIO QUESTI TASK
 class File_utility {
     /**
      * Crea un file temporaneo
@@ -51,11 +50,11 @@ class File_utility {
             }
         }
         if(newpic.renameTo(old)){ //rimette in path originale
-            boolean junk = temp.delete();
+            temp.delete();
             return old;
         }
         else{ //se fallisce rimettiti se possibile nelle cond di partenza
-            boolean b = old.renameTo(new File(path));
+            old.renameTo(new File(path));
         }
         return null;
     }

@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentManager;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 public class ProfileFragment extends Fragment {
 
@@ -60,9 +61,6 @@ public class ProfileFragment extends Fragment {
         nome = view.findViewById(R.id.nome);
         carratteristiche = view.findViewById(R.id.caratteristiche);
         civ = view.findViewById(R.id.pic);
-        File pic = new File(pathpic);
-        if(pic.exists())
-            civ.setImageBitmap(File_utility.getBitMap(context, Uri.fromFile(pic), 120, 120));
         setView(db.searchById(user_ID));
     }
 
@@ -87,9 +85,10 @@ public class ProfileFragment extends Fragment {
         carratteristiche.setText(String.format("%s Anni, %s", str[2], str[3]));
         File pic = new File(pathpic);
         if(pic.exists())
-            civ.setImageBitmap(File_utility.getBitMap(context, Uri.fromFile(pic), 120, 120));
+            new PhotoLoader(new WeakReference<>(civ), 120, 120).execute(Uri.fromFile(pic));
     }
 
+    //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
     void Dismiss() {
         setView(db.searchById(user_ID));
     }

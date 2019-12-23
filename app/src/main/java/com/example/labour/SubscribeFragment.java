@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -34,6 +34,7 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -49,14 +50,13 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
-    private Bitmap bit;
     private String mCurrentPhotoPath;
-    private String picpath;
-    private String picfolder;
+    private String picpath; //immagine attuale di profilo
+    private String picfolder; //cartella in cui sono presenti le foto
     private boolean button_pressed; //true se l'utente preme imposta, falsa altrimenti
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mContext = context;
     }
@@ -72,7 +72,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             picpath = picfolder + "profile_"+ ID +".jpg";
             File pic = new File(picpath);
             if(pic.exists())
-                civ.setImageBitmap(File_utility.getBitMap(mContext, Uri.fromFile(pic), 150, 150));
+                new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
             String nomestr = getArguments().getString("nome");
             if (nomestr != null){ //se nomestr è diverso da null anche gli altri elementi sono stati settati
                 nome.setText(nomestr);
@@ -103,19 +103,25 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             if(button.getText().toString().equals("Sesso"))
                 sesso = "Uomo";
             else sesso = button.getText().toString();
-            if(age.getText().toString().length()!=0)
+            if(Objects.requireNonNull(age.getText()).toString().length()!=0)
                 eta =age.getText().toString();
-            mydb.updateRecords(ID,nome.getText().toString(),cognome.getText().toString(),sesso, Integer.parseInt(eta));
+            mydb.updateRecords(ID, Objects.requireNonNull(nome.getText()).toString(), Objects.requireNonNull(cognome.getText()).toString(),sesso, Integer.parseInt(eta));
+
             button_pressed = true;
+
+            //imposta la foto come predefinita se è stata cambiata
+            if (mCurrentPhotoPath != null)
+                new RenameFile(this).execute(picpath, mCurrentPhotoPath);
+            else dismiss();
         }
-        dismiss();
+        else dismiss();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         Dialog dialog = getDialog();
-        if (dialog != null) {
+        if (dialog != null && dialog.getWindow()!=null) {
             int orientation = getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 int width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -169,32 +175,25 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         if (requestCode == FOTO_REQUEST) {
             if (resultCode == RESULT_OK) {
 
-                Uri uri;
-                if(data==null || (uri=data.getData())==null){// l'utente ha selezionato la camera
+                if(data==null || data.getData()==null){// l'utente ha selezionato la camera
                     Log.i("suces", "well");
                     File f = new File(mCurrentPhotoPath);
-                    if ((f = File_utility.handlePic(picpath, f)) != null){
-                        Log.i("new path?", f.getAbsolutePath());
-                        if((bit=File_utility.getBitMap(mContext, Uri.fromFile(f), 150, 150))!=null)
-                            civ.setImageBitmap(bit);
-                    } else Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
-                } else {
-                    //l'utente ha selezionato una foto dalla galleria
-                    if((bit=File_utility.getBitMap(mContext, data.getData(), 150, 150))!=null){
-                        Log.i("Wut","loose");
-                        civ.setImageBitmap(bit);
-                        if(!File_utility.fromBitmapToFile(bit, picpath))
-                            Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();;
-                    } else Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
-                    if(File_utility.destroyTemp(mCurrentPhotoPath))
-                        Log.i("Distrutto", "hurra");
+                    //if ((f = File_utility.handlePic(picpath, f)) != null){
+                    //    Log.i("new path?", f.getAbsolutePath());
+                        new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(f));
+                    //} else Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
                 }
+                else
+                    //l'utente ha selezionato una foto dalla galleria
+                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150, mCurrentPhotoPath).
+                            execute(data.getData());
             }
             else {
                 Log.i("Fail", "prova elimina");
                 if(File_utility.destroyTemp(mCurrentPhotoPath))
                     Log.i("Distrutto", "hurra");
-                else Log.i("STack", "overflow");
+                else Log.i("Stack", "overflow");
+                mCurrentPhotoPath = null;
             }
 
         }
@@ -232,25 +231,23 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     void onImageClick() {
-        Intent chooserIntent;
-        List<Intent> intentList = new ArrayList<>();
-        File photoFile = null;
-
-        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File photoFile;
         try {
             photoFile = File_utility.createImageFile(picfolder);
             mCurrentPhotoPath = photoFile.getAbsolutePath();
         } catch (IOException ex) {
-            Toast.makeText(mContext, "Impossibile creare l'immagine", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
+            return;
         }
-        if (photoFile != null) {
-            Uri photoURI = FileProvider.getUriForFile(mContext,
-                    mContext.getPackageName() + ".provider",
-                    photoFile);
-            Log.i("Pavido", photoURI.toString());
-            camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoURI);
-            intentList.add(camera);
-        }
+
+        Intent chooserIntent;
+        List<Intent> intentList = new ArrayList<>();
+
+        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Uri photoURI = FileProvider.getUriForFile(mContext,
+                mContext.getPackageName() + ".provider", photoFile);
+        camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoURI);
+        intentList.add(camera);
 
         intentList.add(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
 
@@ -262,4 +259,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     //--------------------------------------------
+
+    //chiamato dall'asynctask che si occupa di caricare la bitmap
+    /*@Override
+    public void getNewFilePath(String path) {
+        if (bitmap != null){
+
+        }
+    }*/
 }

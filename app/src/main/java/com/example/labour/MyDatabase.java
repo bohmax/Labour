@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 class MyDatabase {
 
@@ -37,13 +36,13 @@ class MyDatabase {
         return database.insert(OP_TABLE, null, values);
     }
 
-    long updateRecords(String id, String name, String cognome, String gender, int eta) {
+    void updateRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
         values.put(OP_SESSO, gender);
         values.put(OP_ETA, eta);
-        return database.update(OP_TABLE, values, OP_ID+"=?", new String[]{id});
+        database.update(OP_TABLE, values, OP_ID+"=?", new String[]{id});
     }
 
     String[] searchById(String id) {
