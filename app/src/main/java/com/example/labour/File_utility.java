@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -105,7 +106,7 @@ class File_utility {
     }
 
     /**
-     * eliminare un specifico file
+     * eliminare uno specifico file
      * @param path del file da cancellare
      * @return true se è stato eliminato, falso altrimenti
      */
@@ -116,6 +117,21 @@ class File_utility {
                 return todestroy.delete();
             return true;
         } return true;
+    }
+
+    /**
+     * elimina tutti i file che contengono la parola temp
+     * @param path la path del folder in cui eliminare i file
+     */
+    static void destroyAllTemp(String path){
+        File folder = new File(path);
+
+        File[] filenamestemp = folder.listFiles();
+
+        for (File file : filenamestemp) {
+            if (file.getAbsolutePath().contains("temp"))
+                file.delete();
+        }
     }
 
     //per rispettare i limiti del render da https://developer.android.com/topic/performance/graphics/load-bitmap
@@ -175,8 +191,9 @@ class File_utility {
 
     private static int dpitopx(Context context,int i) {
         Resources r = context.getResources();
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, i,
-                r.getDisplayMetrics());
+        //return (int) TypedValue.applyDimension(
+        //        TypedValue.COMPLEX_UNIT_DIP, i,
+        //        r.getDisplayMetrics());
+        return i * (context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 }

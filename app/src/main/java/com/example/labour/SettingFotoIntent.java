@@ -17,6 +17,9 @@ public class SettingFotoIntent extends AsyncTask<String, Void, File> {
 
     @Override
     protected File doInBackground(String... strings) {
+        //cancella un vecchio file creato da un esecuzione precedente del programma, che magari non era stato pulito
+        if (strings.length == 2 && strings[1] == null) //prima esecuzione del service di questa istanza del programma
+            File_utility.destroyAllTemp(strings[0]);
         File photoFile = null;
         try {
             photoFile = File_utility.createImageFile(strings[0]);

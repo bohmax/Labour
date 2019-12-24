@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -115,7 +114,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 new RenameFile(this).execute(picpath, mCurrentPhotoPath);
             else dismiss();
         }
-        else{
+        else if (v == disable){
             if (mCurrentPhotoPath != null)
                 new DeleteFile(this).execute(mCurrentPhotoPath);
             else dismiss();
@@ -231,7 +230,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     void onImageClick() {
-        new SettingFotoIntent(this).execute(picfolder);
+        new SettingFotoIntent(this).execute(picfolder, mCurrentPhotoPath);
     }
 
     //--------------------------------------------
