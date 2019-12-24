@@ -1,6 +1,5 @@
 package com.example.labour;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -13,7 +12,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, DialogInterface.OnDismissListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     private String user_ID="pippotest";
     private boolean exist;
@@ -22,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private WorkFragment workf = new WorkFragment();
     private ProfileFragment proff = new ProfileFragment();
     private Fragment active = packf;
-    private boolean update_profiledata;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,12 +116,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return false;
     }
 
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        if (update_profiledata)
-            proff.Dismiss();
-    }
-
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         if(active instanceof PackageFragment) //avrei anche potuto fare in modo che implementino un interfaccio, ma ho preferito questo approccio
             packf.showPopup(v);
@@ -142,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         proff.onEditClick();
     }
 
-    public void setCancel(boolean update){
-        update_profiledata = update;
+    public void Update_profile(){
+        proff.Dismiss();
     }
 
 }

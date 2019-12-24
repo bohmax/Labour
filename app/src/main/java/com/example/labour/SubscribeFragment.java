@@ -33,7 +33,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
-public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
+public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, FileInterface {
 
     private static final int FOTO_REQUEST = 0;
     private Context mContext;
@@ -50,7 +49,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
-    private String mCurrentPhotoPath;
+    private String mCurrentPhotoPath, mnewTempPath;//rispettivamente, il path della foto che dovrà essere salvata e il path del file candidato per essere il futuro prossimo mCurrentpath
     private String picpath; //immagine attuale di profilo
     private String picfolder; //cartella in cui sono presenti le foto
     private boolean button_pressed; //true se l'utente preme imposta, falsa altrimenti
@@ -81,8 +80,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 button.setText(getArguments().getString("sesso"));
             }
         }
-        if (savedInstanceState!=null)
+        if (savedInstanceState!=null) {
             mCurrentPhotoPath = savedInstanceState.getString("path");
+            mnewTempPath = savedInstanceState.getString("new");
+        }
         mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
@@ -114,7 +115,11 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 new RenameFile(this).execute(picpath, mCurrentPhotoPath);
             else dismiss();
         }
-        else dismiss();
+        else{
+            if (mCurrentPhotoPath != null)
+                new DeleteFile(this).execute(mCurrentPhotoPath);
+            else dismiss();
+        }
     }
 
     @Override
@@ -135,10 +140,9 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         final Activity activity = getActivity();
-        if (activity instanceof DialogInterface.OnDismissListener) {
+        if (activity instanceof MainActivity && button_pressed) {
             MainActivity ma = (MainActivity) activity;
-            ma.setCancel(button_pressed);
-            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
+            ma.Update_profile();// notifico all'activity che l'utente ha fatto modifiche
         }
     }
 
@@ -146,6 +150,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("path", mCurrentPhotoPath);
+        outState.putString("new", mnewTempPath);
     }
 
     /*@Override
@@ -177,22 +182,17 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
 
                 if(data==null || data.getData()==null){// l'utente ha selezionato la camera
                     Log.i("suces", "well");
-                    File f = new File(mCurrentPhotoPath);
-                    //if ((f = File_utility.handlePic(picpath, f)) != null){
-                    //    Log.i("new path?", f.getAbsolutePath());
-                        new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(f));
-                    //} else Toast.makeText(mContext, "Operazione fallita, riprovare", Toast.LENGTH_SHORT).show();
+                    Uri newfile = Uri.fromFile(new File(mnewTempPath));
+                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150).
+                            execute(newfile, mCurrentPhotoPath == null? null: Uri.fromFile(new File(mCurrentPhotoPath)));
                 }
                 else
                     //l'utente ha selezionato una foto dalla galleria
-                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150, mCurrentPhotoPath).
-                            execute(data.getData());
+                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150, mnewTempPath).
+                            execute(data.getData(), mCurrentPhotoPath == null? null: Uri.fromFile(new File(mCurrentPhotoPath)));
             }
             else {
-                Log.i("Fail", "prova elimina");
-                if(File_utility.destroyTemp(mCurrentPhotoPath))
-                    Log.i("Distrutto", "hurra");
-                else Log.i("Stack", "overflow");
+                new DeleteFile().execute(mnewTempPath);
                 mCurrentPhotoPath = null;
             }
 
@@ -231,40 +231,41 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     void onImageClick() {
-        File photoFile;
-        try {
-            photoFile = File_utility.createImageFile(picfolder);
-            mCurrentPhotoPath = photoFile.getAbsolutePath();
-        } catch (IOException ex) {
-            Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        //
-        Intent chooserIntent;
-        List<Intent> intentList = new ArrayList<>();
-
-        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri photoURI = FileProvider.getUriForFile(mContext,
-                mContext.getPackageName() + ".provider", photoFile);
-        camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoURI);
-        intentList.add(camera);
-
-        intentList.add(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
-
-        chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
-                    "Scatta una foto o prendila da quelle già salvate");
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
-
-        startActivityForResult(chooserIntent,FOTO_REQUEST);
+        new SettingFotoIntent(this).execute(picfolder);
     }
 
     //--------------------------------------------
 
-    //chiamato dall'asynctask che si occupa di caricare la bitmap
-    /*@Override
-    public void getNewFilePath(String path) {
-        if (bitmap != null){
+    @Override
+    public void getTempPath(File file) {
+        if (file != null){
 
-        }
-    }*/
+            mnewTempPath = file.getAbsolutePath();
+
+            Intent chooserIntent;
+            List<Intent> intentList = new ArrayList<>();
+
+            Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri photoURI = FileProvider.getUriForFile(mContext,
+                    mContext.getPackageName() + ".provider", file);
+            camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoURI);
+            intentList.add(camera);
+
+            intentList.add(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
+
+            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
+                    "Scatta una foto o prendila da quelle già salvate");
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+
+            startActivityForResult(chooserIntent,FOTO_REQUEST);
+
+        } else Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void saveResult(Boolean result) {
+        if (result)
+            mCurrentPhotoPath = mnewTempPath;
+        mnewTempPath = null;
+    }
 }

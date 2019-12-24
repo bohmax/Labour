@@ -63,9 +63,11 @@ class File_utility {
      * memorizza una bitmap su un file
      * @param bitmap la bitmap da
      * @param path il percorso del file su cui mettere la bitmap
+     * @throws NullPointerException se bitmap o path sono null
      * @return true se la bitmap è stata correttamente copiata
      */
-    static boolean fromBitmapToFile(Bitmap bitmap, String path){
+    static boolean fromBitmapToFile(Bitmap bitmap, String path) throws NullPointerException{
+        if (bitmap == null || path == null) throw new NullPointerException();
         OutputStream out;
         try {
             out = new FileOutputStream(path);
