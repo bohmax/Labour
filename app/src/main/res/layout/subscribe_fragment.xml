@@ -1,168 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/scroll"
-    android:gravity="center"
-    android:paddingBottom="10dp"
-    android:paddingEnd="10dp"
-    android:paddingStart="10dp"
+    android:id="@+id/Relativemaster"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:focusableInTouchMode="true">
+    android:layout_height="wrap_content">
 
-<LinearLayout
-    android:id="@+id/first_linear"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:scrollbars="vertical"
-    android:scrollbarAlwaysDrawVerticalTrack="true"
-    android:focusableInTouchMode="true"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:maxHeight="300dp">
-
-    <RelativeLayout
-        android:id="@+id/relative"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center">
-
-        <com.mikhaellopez.circularimageview.CircularImageView
-            android:id="@+id/image"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_centerInParent="true"
-            android:contentDescription="@string/sfondo"
-            android:scaleType="centerCrop"
-            android:src="@drawable/worker" />
-
-        <ImageButton
-            android:id="@+id/camera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/image"
-            android:layout_alignEnd="@+id/image"
-            android:layout_alignBottom="@id/image"
-            android:layout_alignTop="@id/image"
-            android:layout_centerInParent="true"
-            android:background="@drawable/ring"
-            android:src="@drawable/ic_camera_alt_black_24dp"
-            android:onClick="onImageClick"
-            android:contentDescription="@string/camera"
-            />
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/linear1"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editNomeWrapper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/TextNome"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:ems="10"
-                android:hint="@string/nome"
-                android:inputType="textCapSentences"
-                tools:ignore="Autofill,LabelFor" />
-        </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear2"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editCognomeWrapper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/TextCognome"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:ems="10"
-                android:hint="@string/cognome"
-                android:inputType="textCapSentences"
-                tools:ignore="Autofill,LabelFor" />
-        </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/buttonsex"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
-            android:drawableEnd="@drawable/ic_keyboard_arrow_down_black_24dp"
-            android:onClick="showPopup"
-            android:text="@string/sesso" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editEtaWrapper"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/TextEta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
-            android:hint="@string/eta"
-            android:inputType="numberDecimal"
-            tools:ignore="Autofill,LabelFor" />
-        </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
-
-    <RelativeLayout
-        android:id="@+id/relative1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="10dp"
+    <ScrollView
+        android:id="@+id/scroll"
+        android:gravity="center"
         android:paddingBottom="10dp"
-        android:gravity="end" >
+        android:paddingEnd="10dp"
+        android:paddingStart="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusableInTouchMode="true">
 
-        <Button
-            android:id="@+id/annulla"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/first_linear"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/imposta"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="@string/canella"
-            android:textColor="#E91E63" />
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:maxHeight="300dp"
+            android:orientation="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbars="vertical">
 
-        <Button
-            android:id="@+id/imposta"
-            android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/relative"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
+
+                <com.mikhaellopez.circularimageview.CircularImageView
+                    android:id="@+id/image"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@string/sfondo"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/worker" />
+
+                <ImageButton
+                    android:id="@+id/camera"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/image"
+                    android:layout_alignTop="@id/image"
+                    android:layout_alignEnd="@+id/image"
+                    android:layout_alignBottom="@id/image"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/ring"
+                    android:contentDescription="@string/camera"
+                    android:onClick="onImageClick"
+                    android:src="@drawable/ic_camera_alt_black_24dp" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/linear1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/editNomeWrapper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/TextNome"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:ems="10"
+                        android:hint="@string/nome"
+                        android:inputType="textCapSentences"
+                        tools:ignore="Autofill,LabelFor" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/editCognomeWrapper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/TextCognome"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:ems="10"
+                        android:hint="@string/cognome"
+                        android:inputType="textCapSentences"
+                        tools:ignore="Autofill,LabelFor" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/buttonsex"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_weight="1"
+                    android:drawableEnd="@drawable/ic_keyboard_arrow_down_black_24dp"
+                    android:ems="10"
+                    android:onClick="showPopup"
+                    android:text="@string/sesso" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/editEtaWrapper"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/TextEta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginBottom="10dp"
+                        android:ems="10"
+                        android:hint="@string/eta"
+                        android:inputType="numberDecimal"
+                        tools:ignore="Autofill,LabelFor" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/relative1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <Button
+                    android:id="@+id/annulla"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toStartOf="@+id/imposta"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:text="@string/canella"
+                    android:textColor="#E91E63" />
+
+                <Button
+                    android:id="@+id/imposta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:text="@string/imposta"
+                    android:textColor="#E91E63" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_alignEnd="@+id/scroll"
+        android:layout_alignTop="@+id/scroll"
+        android:layout_alignBottom="@+id/scroll"
+        android:layout_alignStart="@+id/scroll">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="@string/imposta"
-            android:textColor="#E91E63" />
+            android:visibility="gone"
+            android:layout_centerInParent="true"/>
+
     </RelativeLayout>
 
-</LinearLayout>
-</ScrollView>
+</RelativeLayout>

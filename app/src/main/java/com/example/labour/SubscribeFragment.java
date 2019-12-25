@@ -142,6 +142,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        mCurrentPhotoPath = null;
+        mnewTempPath = null;
         final Activity activity = getActivity();
         if (activity instanceof MainActivity && button_pressed) {
             MainActivity ma = (MainActivity) activity;
