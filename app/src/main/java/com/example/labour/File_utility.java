@@ -5,10 +5,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -91,18 +89,8 @@ class File_utility {
      * @return la bitmap risultante, false se accade un errore
      */
     static Bitmap getBitMap(Context context, Uri uri,int widthdp, int heightdp){
-        InputStream inputStream;
-        try {
-            inputStream = context.getContentResolver().openInputStream(uri);
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-        Bitmap bit = decodeSampledBitmapFromResource(inputStream, context, uri, dpitopx(context, widthdp),  dpitopx(context, heightdp));
-        try {
-            if (inputStream != null)
-                inputStream.close();
-        } catch (IOException ignore){}
-        return bit;
+        return decodeSampledBitmapFromResource(context, uri, dpitopx(context, widthdp),  dpitopx(context, heightdp));
+
     }
 
     /**
@@ -136,6 +124,7 @@ class File_utility {
 
     //per rispettare i limiti del render da https://developer.android.com/topic/performance/graphics/load-bitmap
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -157,43 +146,47 @@ class File_utility {
         return inSampleSize;
     }
 
-    private static Bitmap decodeSampledBitmapFromResource(InputStream is, Context context, Uri uri, int reqWidth, int reqHeight) {
+    private static Bitmap decodeSampledBitmapFromResource(Context context, Uri uri, int reqWidth, int reqHeight) {
+
+        InputStream inputStream = createInput(context, uri);
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(is, null, options);
+        BitmapFactory.decodeStream(inputStream, null, options); //injustbound = true => ritorna una bitmap null ma con option con i bound dell immagine
+        CloseStream(inputStream);
 
-        //dovuto a causa di un bruco
-        try {
-            is.close();
-        } catch (IOException e) {
-            return null;
-        }
-        InputStream is1;
-        try {
-            is1 = context.getContentResolver().openInputStream(uri);
-        } catch (FileNotFoundException e) {
-            return null;
-        }
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
         // Decode bitmap with inSampleSize set
+        inputStream = createInput(context, uri);
         options.inJustDecodeBounds = false;
-        Bitmap bit = BitmapFactory.decodeStream(is1, null, options);
-        try {
-            if (is1 != null)
-                is1.close();
-        } catch (IOException ignore){}
+        Bitmap bit = BitmapFactory.decodeStream(inputStream, null, options);
+        CloseStream(inputStream);
+
         return bit;
+    }
+
+    private static InputStream createInput(Context context, Uri uri){
+        InputStream is = null;
+        try {
+            is = context.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException ignored) { }
+        return is;
+    }
+
+    private static void CloseStream(InputStream is){
+        try {
+            if (is != null)
+                is.close();
+        } catch (IOException ignore){}
     }
 
     private static int dpitopx(Context context,int i) {
         Resources r = context.getResources();
-        //return (int) TypedValue.applyDimension(
-        //        TypedValue.COMPLEX_UNIT_DIP, i,
-        //        r.getDisplayMetrics());
-        return i * (context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, i,
+                r.getDisplayMetrics());
     }
 }

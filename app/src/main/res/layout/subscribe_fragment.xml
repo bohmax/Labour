@@ -34,10 +34,9 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_centerInParent="true"
-            android:src="@drawable/worker"
-            android:tint="@color/grey"
-            app:civ_border="false"
-            android:contentDescription="@string/sfondo"/>
+            android:contentDescription="@string/sfondo"
+            android:scaleType="centerCrop"
+            android:src="@drawable/worker" />
 
         <ImageButton
             android:id="@+id/camera"

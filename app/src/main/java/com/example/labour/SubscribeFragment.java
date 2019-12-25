@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
@@ -63,14 +64,13 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View v = getElement();
+        File pic = null;
 
         if(getArguments()!=null){
             ID = getArguments().getString("ID");
             picfolder = getArguments().getString("Path_Folder");
             picpath = picfolder + "profile_"+ ID +".jpg";
-            File pic = new File(picpath);
-            if(pic.exists())
-                new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
+            pic = new File(picpath);
             String nomestr = getArguments().getString("nome");
             if (nomestr != null){ //se nomestr è diverso da null anche gli altri elementi sono stati settati
                 nome.setText(nomestr);
@@ -83,6 +83,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             mCurrentPhotoPath = savedInstanceState.getString("path");
             mnewTempPath = savedInstanceState.getString("new");
         }
+        if (mCurrentPhotoPath != null)
+            new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
+        else if (pic != null && pic.exists())
+            new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
         mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
@@ -208,6 +212,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         nome = view.findViewById(R.id.TextNome);
         cognome = view.findViewById(R.id.TextCognome);
         civ = view.findViewById(R.id.image);
+        civ.setColorFilter(ContextCompat.getColor(mContext, R.color.grey));
         accept.setOnClickListener(this);
         disable.setOnClickListener(this);
         return view;
