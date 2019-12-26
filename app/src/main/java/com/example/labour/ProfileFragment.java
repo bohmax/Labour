@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,7 +19,7 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements FileInterface {
 
     private String user_ID="pippotest";
     private String[] userInfo;
@@ -29,6 +30,7 @@ public class ProfileFragment extends Fragment {
     private Context context;
     private TextView nome, carratteristiche;
     private CircularImageView civ;
+    private ProgressBar progress;
     private MyDatabase db;
 
     @Nullable
@@ -61,6 +63,7 @@ public class ProfileFragment extends Fragment {
         nome = view.findViewById(R.id.nome);
         carratteristiche = view.findViewById(R.id.caratteristiche);
         civ = view.findViewById(R.id.pic);
+        progress = view.findViewById(R.id.scroll);
         setView(db.searchById(user_ID));
     }
 
@@ -84,8 +87,9 @@ public class ProfileFragment extends Fragment {
             nome.setText(String.format("%s %s", str[0], str[1]));
         carratteristiche.setText(String.format("%s Anni, %s", str[2], str[3]));
         File pic = new File(pathpic);
-        if(pic.exists())
-            new PhotoLoader(new WeakReference<>(civ), 120, 120).execute(Uri.fromFile(pic));
+        if(pic.exists()) {
+            new PhotoLoader(this ,new WeakReference<>(civ), 120, 120).execute(Uri.fromFile(pic));
+        }
     }
 
     //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
@@ -114,5 +118,15 @@ public class ProfileFragment extends Fragment {
 
     void onImageClick() {
         sf.onImageClick();
+    }
+
+    @Override
+    public void getTempPath(File file) {
+
+    }
+
+    @Override
+    public void saveResult(Boolean result){
+        progress.setVisibility(View.GONE);
     }
 }

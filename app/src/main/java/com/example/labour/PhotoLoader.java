@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+
 import com.mikhaellopez.circularimageview.CircularImageView;
 import java.lang.ref.WeakReference;
 
@@ -38,9 +40,11 @@ public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
     }
 
     //Istanziato quando si deve caricare la foto attuale dell'utente
-    PhotoLoader(WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException{
-        if(civ == null) throw new NullPointerException();
+    PhotoLoader(Fragment fragment, WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException, ClassCastException{
+        if(civ == null || fragment == null) throw new NullPointerException();
+        if (!(fragment instanceof FileInterface)) throw new ClassCastException();
         this.civ = civ;
+        this.fragment =(FileInterface) fragment;
         width = widthdp;
         height = heightdp;
     }
@@ -55,7 +59,7 @@ public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
                 if (!File_utility.fromBitmapToFile(bitmap, path))
                     errcode = 1;
         }
-        if (fragment != null && bitmap != null && errcode == 0 && uris[1] != null) //elimina il vecchio file se tutto ha avuto successo
+        if (bitmap != null && uris.length == 2 && uris[1] != null) //elimina il vecchio file se tutto ha avuto successo
             File_utility.destroyTemp(uris[1].getPath());
         return bitmap;
     }

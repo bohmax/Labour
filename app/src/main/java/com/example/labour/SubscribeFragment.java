@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -49,6 +50,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
+    private ProgressBar progress;
     private String mCurrentPhotoPath, mnewTempPath;//rispettivamente, il path della foto che dovrà essere salvata e il path del file candidato per essere il futuro prossimo mCurrentpath
     private String picpath; //immagine attuale di profilo
     private String picfolder; //cartella in cui sono presenti le foto
@@ -84,9 +86,9 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             mnewTempPath = savedInstanceState.getString("new");
         }
         if (mCurrentPhotoPath != null)
-            new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
+            new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
         else if (pic != null && pic.exists())
-            new PhotoLoader(new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
+            new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
         mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
@@ -114,8 +116,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             button_pressed = true;
 
             //imposta la foto come predefinita se è stata cambiata
-            if (mCurrentPhotoPath != null)
+            if (mCurrentPhotoPath != null) {
+                progress.setVisibility(View.VISIBLE);
                 new RenameFile(this).execute(picpath, mCurrentPhotoPath);
+            }
             else dismiss();
         }
         else if (v == disable){
@@ -144,6 +148,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         super.onDismiss(dialog);
         mCurrentPhotoPath = null;
         mnewTempPath = null;
+        progress.setVisibility(View.GONE);
         final Activity activity = getActivity();
         if (activity instanceof MainActivity && button_pressed) {
             MainActivity ma = (MainActivity) activity;
@@ -184,7 +189,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         Log.i("result", String.valueOf(resultCode));
         if (requestCode == FOTO_REQUEST) {
             if (resultCode == RESULT_OK) {
-
+                progress.setVisibility(View.VISIBLE);
                 if(data==null || data.getData()==null){// l'utente ha selezionato la camera
                     Log.i("suces", "well");
                     Uri newfile = Uri.fromFile(new File(mnewTempPath));
@@ -215,6 +220,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         cognome = view.findViewById(R.id.TextCognome);
         civ = view.findViewById(R.id.image);
         civ.setColorFilter(ContextCompat.getColor(mContext, R.color.grey));
+        progress = view.findViewById(R.id.scroll1);
         accept.setOnClickListener(this);
         disable.setOnClickListener(this);
         return view;
@@ -237,6 +243,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     void onImageClick() {
+        progress.setVisibility(View.VISIBLE);
         new SettingFotoIntent(this).execute(picfolder, mCurrentPhotoPath);
     }
 
@@ -266,10 +273,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             startActivityForResult(chooserIntent,FOTO_REQUEST);
 
         } else Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
+        progress.setVisibility(View.GONE);
     }
 
     @Override
     public void saveResult(Boolean result) {
+        progress.setVisibility(View.GONE);
         if (result)
             mCurrentPhotoPath = mnewTempPath;
         mnewTempPath = null;

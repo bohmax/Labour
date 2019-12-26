@@ -2,18 +2,14 @@ package com.example.labour;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -21,7 +17,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
-//import android.widget.ProgressBar;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -30,43 +26,34 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
 
     private NfcAdapter nfc;
     private PendingIntent pendingIntent = null;
-    private AlertDialog alertDialog;
+    private AlertDialog alertDialog; //richiede l'attivazione del nfc non i permessi
     private MenuFragment menuf;
-    //private ProgressBar progress;
+    private ProgressBar progress;
     private Snackbar sb;
     private MyDatabase mydb;
     EditText test;
 
     boolean serverrequest = false; //per sapere se l'utente vuole interagire con il server
-    boolean nfc_no_choise = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
-    final int NFC_PERMISSION = 1;
+    boolean nfc_not_choosed = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         test = findViewById(R.id.test);
-        test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                richiediAccesso(test.getText().toString());
-            }
-        });
+        progress = findViewById(R.id.scroll);
+        test.setOnClickListener(v -> richiediAccesso(test.getText().toString()));
         if(savedInstanceState != null) {
             menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
-            nfc_no_choise = savedInstanceState.getBoolean("NFC_CHOISE");
+            nfc_not_choosed = savedInstanceState.getBoolean("NFC_CHOISE");
         }
         else {
             menuf = new MenuFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_menu, menuf).commit();
         }
-        if(requestPermission(Manifest.permission.NFC, NFC_PERMISSION))
+        if(Permission_utility.requestPermission(this, Manifest.permission.NFC, Permission_utility.getNfcPermission(), "Se si è interessati a loggarsi attraverso NFC"))
             Log.i("Funziona", "GOOD");
-
-        //progress = findViewById(R.id.progressBar_cyclic);
-        //Toolbar toolbar = findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
 
         nfc = NfcAdapter.getDefaultAdapter(this);
         if (nfc != null ) {
@@ -76,16 +63,11 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             alertDialog = createWirlessAlert();
 
             sb = Snackbar.make(findViewById(R.id.linear), R.string.ATTIVA_NFC, Snackbar.LENGTH_INDEFINITE);
-            sb.setAction("Mostra", new View.OnClickListener() {
-                public void onClick(View v) {
-                    Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
-                    startActivity(intent);
-                }
+            sb.setAction("Mostra", v -> {
+                Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                startActivity(intent);
             });
         }
-        //toolbar.setFocusable(false);
-        //toolbar.setFocusableInTouchMode(false);
-        //progress.setVisibility(View.GONE);
         mydb = new MyDatabase(this);
     }
 
@@ -98,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             Log.i("preso", String.valueOf(pref));
             if (nfc.isEnabled()) nfc.enableForegroundDispatch(this, pendingIntent, null, null);
             else if(!pref) sb.dismiss();
-            else if (!nfc_no_choise) alertDialog.show();
+            else if (!nfc_not_choosed) alertDialog.show();
             else sb.show();
         }
     }
@@ -117,7 +99,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         getSupportFragmentManager().putFragment(savedInstanceState, "MenuFragmente", menuf);
-        savedInstanceState.putBoolean("NFC_CHOISE", nfc_no_choise);
+        savedInstanceState.putBoolean("NFC_CHOISE", nfc_not_choosed);
     }
 
     @Override
@@ -133,21 +115,17 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case NFC_PERMISSION:{
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
+        if (Permission_utility.getNfcPermission() == requestCode){
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission
+                nfc = null;
             }
-            default:
-                throw new IllegalStateException("Unexpected value: " + requestCode);
-        }
+        } else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     //per la gestione della tastiera
@@ -169,26 +147,6 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
         return super.onKeyDown(keyCode, event);
     }
 
-    //controlla che un determinato permesso sia stato dato
-    private boolean requestPermission(String permission, int requestCode){
-        //check permission
-        if(ContextCompat.checkSelfPermission(this, permission)
-                != PackageManager.PERMISSION_GRANTED){
-            //permssi non ancora dati, mostra una spiegazione
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    permission)) {
-                //mostra una spiegazione all utente
-                Toast.makeText(this,"Pemessi non dati", Toast.LENGTH_SHORT).show();
-            } else {
-                // richiedi permesso
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission},
-                        requestCode); //requestcode specifica il numero di richiesta
-            }
-        } else return true;
-        return false;
-    }
-
     private void tryInsertDB(String id){
         Intent i = new Intent(this, MainActivity.class);
         if(mydb.createRecords(id, "Mario", "Rossi", "Uomo", 22) != -1)
@@ -202,6 +160,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     private void richiediAccesso(String id){
         if(id.length()>0) {
             if (serverrequest) {
+                progress.setVisibility(View.VISIBLE);
                 new ServerRequest(this).execute(id);
             } else tryInsertDB(id);
         }
@@ -217,19 +176,14 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
         alertDialogBuilder
                 .setMessage("Do you want to enable NFC ?")
                 .setCancelable(false)
-                .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        //enable wifi
-                        Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
-                        startActivity(intent);
-                    }
+                .setPositiveButton("Yes", (dialog, id) -> {
+                    //enable wifi
+                    Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                    startActivity(intent);
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        nfc_no_choise = true;
-                        sb.show();
-                    }
+                .setNegativeButton("No", (dialog, which) -> {
+                    nfc_not_choosed = true;
+                    sb.show();
                 });
 
         // create alert dialog
@@ -239,6 +193,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     //chiamata dall'asynctask quando finisce
     @Override
     public void serverTask(boolean answer, String id) {
+        progress.setVisibility(View.GONE);
         if(answer)
             tryInsertDB(id);
         else

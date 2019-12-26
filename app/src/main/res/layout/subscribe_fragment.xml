@@ -185,7 +185,7 @@
         android:layout_alignStart="@+id/scroll">
 
         <ProgressBar
-            android:id="@+id/progressBar"
+            android:id="@+id/scroll1"
             style="?android:attr/progressBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

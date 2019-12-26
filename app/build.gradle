@@ -32,4 +32,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.mikhaellopez:circularimageview:4.1.1'
     implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'androidx.exifinterface:exifinterface:1.1.0-alpha01'
 }

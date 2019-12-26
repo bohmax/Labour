@@ -30,6 +30,13 @@
                     android:src="@drawable/worker"
                     app:civ_border="true"
                     app:civ_border_width="2dp" />
+
+                <ProgressBar
+                    android:id="@+id/scroll"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true" />
             </RelativeLayout>
 
             <TextView
