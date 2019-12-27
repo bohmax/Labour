@@ -1,5 +1,6 @@
 package com.example.labour;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -7,6 +8,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -51,6 +53,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
     private ProgressBar progress;
+    private Intent intent;
     private String mCurrentPhotoPath, mnewTempPath;//rispettivamente, il path della foto che dovrà essere salvata e il path del file candidato per essere il futuro prossimo mCurrentpath
     private String picpath; //immagine attuale di profilo
     private String picfolder; //cartella in cui sono presenti le foto
@@ -67,7 +70,6 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View v = getElement();
         File pic = null;
-
         if(getArguments()!=null){
             ID = getArguments().getString("ID");
             picfolder = getArguments().getString("Path_Folder");
@@ -163,24 +165,21 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         outState.putString("new", mnewTempPath);
     }
 
-    /*@Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == MY_CAMERA_PERMISSION_CODE)
-        {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == Permission_utility.FOTO_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                //fai partire l'intent
+                if (intent != null)
+                    startActivityForResult(intent, FOTO_REQUEST);
+                intent = null;
+            } else {
+                Toast.makeText(mContext, "Permessi necessari per cambiare foto profilo", Toast.LENGTH_LONG).show();
             }
-            else
-            {
-                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
-            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-    }*/
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -191,7 +190,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             if (resultCode == RESULT_OK) {
                 progress.setVisibility(View.VISIBLE);
                 if(data==null || data.getData()==null){// l'utente ha selezionato la camera
-                    Log.i("suces", "well");
+                    Log.i("sucess", "well");
                     Uri newfile = Uri.fromFile(new File(mnewTempPath));
                     new PhotoLoader(this, new WeakReference<>(civ), 150, 150).
                             execute(newfile, mCurrentPhotoPath == null? null: Uri.fromFile(new File(mCurrentPhotoPath)));
@@ -270,7 +269,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                     "Scatta una foto o prendila da quelle già salvate");
             chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
 
-            startActivityForResult(chooserIntent,FOTO_REQUEST);
+
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, Permission_utility.FOTO_PERMISSION, "Concedi questi permessi per modificare la foto profilo"))
+                startActivityForResult(chooserIntent,FOTO_REQUEST);
+            else intent = chooserIntent;
 
         } else Toast.makeText(mContext, "Impossibile preparare l'immagine, controlla i permessi! O riavvia!", Toast.LENGTH_SHORT).show();
         progress.setVisibility(View.GONE);
@@ -279,7 +281,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     @Override
     public void saveResult(Boolean result) {
         progress.setVisibility(View.GONE);
-        if (result)
+        if (result && mnewTempPath != null) //se android restarta l'app e quindi mnewTemp sarebbe null.
             mCurrentPhotoPath = mnewTempPath;
         mnewTempPath = null;
     }

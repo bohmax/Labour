@@ -12,5 +12,14 @@
             android:key="CONNECT"
             android:summary="Crea una sessione di prova offline"
             android:title="Sessione di prova" />
+        <Preference
+            android:key="renameCourses"
+            android:title="Controlla permessi"
+            android:summary="Rimanda alle impostazioni per editare i permessi" >
+            <intent
+                android:action="android.settings.APPLICATION_DETAILS_SETTINGS"
+                android:data="package:com.example.labour"
+                android:targetPackage="com.example.labour" />
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

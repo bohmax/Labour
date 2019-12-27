@@ -2,12 +2,9 @@ package com.example.labour;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -52,8 +49,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_menu, menuf).commit();
         }
-        if(Permission_utility.requestPermission(this, Manifest.permission.NFC, Permission_utility.getNfcPermission(), "Se si è interessati a loggarsi attraverso NFC"))
-            Log.i("Funziona", "GOOD");
+
 
         nfc = NfcAdapter.getDefaultAdapter(this);
         if (nfc != null ) {
@@ -111,21 +107,6 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             richiediAccesso(GetLogin_ID.getNFCPayload(messages[0]));
         } else
             Log.i("Empy", "empty text!");
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (Permission_utility.getNfcPermission() == requestCode){
-            // If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
-                // permission denied, boo! Disable the
-                // functionality that depends on this permission
-                nfc = null;
-            }
-        } else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     //per la gestione della tastiera

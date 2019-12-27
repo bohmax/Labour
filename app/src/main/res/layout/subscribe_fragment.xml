@@ -157,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:layout_toStartOf="@+id/imposta"
                     android:background="?android:attr/selectableItemBackground"
-                    android:text="@string/canella"
+                    android:text="@string/cancella"
                     android:textColor="#E91E63" />
 
                 <Button

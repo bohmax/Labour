@@ -64,6 +64,7 @@ public class ProfileFragment extends Fragment implements FileInterface {
         carratteristiche = view.findViewById(R.id.caratteristiche);
         civ = view.findViewById(R.id.pic);
         progress = view.findViewById(R.id.scroll);
+        progress.setVisibility(View.GONE);
         setView(db.searchById(user_ID));
     }
 
@@ -88,6 +89,7 @@ public class ProfileFragment extends Fragment implements FileInterface {
         carratteristiche.setText(String.format("%s Anni, %s", str[2], str[3]));
         File pic = new File(pathpic);
         if(pic.exists()) {
+            progress.setVisibility(View.VISIBLE);
             new PhotoLoader(this ,new WeakReference<>(civ), 120, 120).execute(Uri.fromFile(pic));
         }
     }

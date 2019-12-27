@@ -1,36 +1,16 @@
 package com.example.labour;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
-public class Permission_utility {
+class Permission_utility {
 
-    private static final int NFC_PERMISSION = 1;
-    private static final int CAMERA_PERMISSION = 2;
-    private static final int WRITE_PERMISSION = 3;
-    private static final int ACCELERATOR_PERMISSION = 4;
-
-    static int getNfcPermission() {
-        return NFC_PERMISSION;
-    }
-
-    static int getCameraPermission() {
-        return CAMERA_PERMISSION;
-    }
-
-    static int getWritePermission() {
-        return WRITE_PERMISSION;
-    }
-
-    static int getAcceleratorPermission() {
-        return ACCELERATOR_PERMISSION;
-    }
+    static final int NFC_PERMISSION = 1;
+    static final int FOTO_PERMISSION = 2;
 
     static boolean requestPermission(Activity activity, String permission, int requestCode, String explenation){
         //check permission
@@ -49,7 +29,22 @@ public class Permission_utility {
         } else return true;
     }
 
-    //static boolean permissionCallback(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-    //}
+    static boolean requestPermission(Fragment fragment, Activity act, String[] permissions, int requestCode, String explenation){
+        boolean granted = true;
+        int i = 0;
+        while (i < permissions.length && granted) {
+            granted = ContextCompat.checkSelfPermission(act, permissions[i]) == PackageManager.PERMISSION_GRANTED;
+            i++;
+        }
+        if (granted) return true;
+        i = 0;
+        for (String permission: permissions)
+            if (fragment.shouldShowRequestPermissionRationale(permission)) {//ritorna false se l'utente ha premuto non mostrare più
+                i++;
+            }
+        if (i == 0)
+            Toast.makeText(act, explenation, Toast.LENGTH_SHORT).show();
+        fragment.requestPermissions(permissions, requestCode);
+        return false;
+    }
 }

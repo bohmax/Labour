@@ -27,7 +27,7 @@ public class RenameFile extends AsyncTask<String, Void, File> {
             if (file != null)
                 df.dismiss();
             else
-                Toast.makeText(df.getContext(), "Impossibile salvare il file, riprovare!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(df.getActivity(), "Impossibile salvare il file, riprovare!", Toast.LENGTH_LONG).show();
         }
     }
 }
