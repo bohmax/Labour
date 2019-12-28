@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.fragment;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -14,6 +14,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.labour.R;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
@@ -32,7 +34,7 @@ public class WorkFragment extends Fragment implements SensorEventListener {
 
     private float[] mGravity; //per gestione accelerometro e magnetometro
     private float[] mGeomagnetic;
-    private final int bufsize = 15; //dimensione della coda
+    private final int bufsize = 30; //dimensione della coda
     private CircularFifoQueue<Float> buf = new CircularFifoQueue<>(bufsize); //cerco una media per l'azimuth in modo da non avere un risultato ballerino
     private float somma = 0;//per avitae di sommare ogni volta tutti gli elementi dell array
     private int last_inserted = 0; //indice dell'elemento da rimuovere dalla coda
@@ -135,7 +137,7 @@ public class WorkFragment extends Fragment implements SensorEventListener {
                     buf.add(rotation);
                     last_inserted = (last_inserted+1)%bufsize;
                     float media = somma /(float) buf.size();
-                    coordinata.setText(String.valueOf(media));
+                    coordinata.setText(String.valueOf(Math.round(media)));
                     direzione.setText(getDirection(media));
                 } else{
                     somma += rotation;

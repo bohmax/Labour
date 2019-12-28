@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.utility;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -16,14 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-class File_utility {
+public class File_utility {
     /**
      * Crea un file temporaneo
      * @param path in cui creare il file temporaneo
      * @return un File temporaneo creato nel path selezionato
      * @throws IOException
      */
-    static File createImageFile(String path) throws IOException {
+    public static File createImageFile(String path) throws IOException {
         File storageDir = new File(path);
         Log.i("Path", storageDir.getAbsolutePath());
         return File.createTempFile(
@@ -41,7 +41,7 @@ class File_utility {
      * @param newpic file da modificare
      * @return Un File che rappresenta la nuova foto profilo, null altrimenti
      */
-    static File handlePic(String path,File newpic){
+    public static File handlePic(String path,File newpic){
         File old = new File(path);
         File temp = new File(path + "_temp.jpg");
 
@@ -67,7 +67,7 @@ class File_utility {
      * @throws NullPointerException se bitmap o path sono null
      * @return true se la bitmap è stata correttamente copiata
      */
-    static boolean fromBitmapToFile(Bitmap bitmap, String path) throws NullPointerException{
+    public static boolean fromBitmapToFile(Bitmap bitmap, String path) throws NullPointerException{
         if (bitmap == null || path == null) throw new NullPointerException();
         OutputStream out;
         try {
@@ -90,7 +90,7 @@ class File_utility {
      * @param heightdp altezza della bitmap in dp
      * @return la bitmap risultante, false se accade un errore
      */
-    static Bitmap getBitMap(Context context, Uri uri,int widthdp, int heightdp){
+    public static Bitmap getBitMap(Context context, Uri uri,int widthdp, int heightdp){
         return decodeSampledBitmapFromResource(context, uri, dpitopx(context, widthdp),  dpitopx(context, heightdp));
 
     }
@@ -100,7 +100,7 @@ class File_utility {
      * @param path del file da cancellare
      * @return true se è stato eliminato, falso altrimenti
      */
-    static boolean destroyTemp(String path){
+    public static boolean destroyTemp(String path){
         if(path!=null) {
             File todestroy = new File(path);
             if (todestroy.exists())
@@ -113,7 +113,7 @@ class File_utility {
      * elimina tutti i file che contengono la parola temp
      * @param path la path del folder in cui eliminare i file
      */
-    static void destroyAllTemp(String path){
+    public static void destroyAllTemp(String path){
         File folder = new File(path);
 
         File[] filenamestemp = folder.listFiles();

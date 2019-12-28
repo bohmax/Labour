@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.interfacce;
 
 public interface TaskListener {
 

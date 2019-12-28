@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+
+import com.example.labour.R;
 
 import java.util.Objects;
 
@@ -79,11 +81,11 @@ public class PackageFragment extends Fragment {
             fm.putFragment(outState, "SubscribeFragment", sf);
     }
 
-    void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         sf.showPopup(v);
     }
 
-    void onImageClick(View v) {
+    public void onImageClick(View v) {
         sf.onImageClick();
     }
 

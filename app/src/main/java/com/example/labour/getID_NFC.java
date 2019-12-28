@@ -15,7 +15,7 @@ import java.util.Arrays;
 /**
  * Classe che si occupa di gestire l'acquisizione dell'id
  */
-class GetLogin_ID {
+public class getID_NFC {
 
     private static StringBuilder sb = new StringBuilder();
 
@@ -24,7 +24,7 @@ class GetLogin_ID {
      * @param intent l'intent nel quale il messaggio nfc è stato registrato
      * @return array di NFC Data Exchange Format se ci sono messaggi pendenti, null altrimenti
      */
-    static NdefMessage[] getNdefMessages(Intent intent){
+    public static NdefMessage[] getNdefMessages(Intent intent){
         Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
         if (rawMessages != null) {
             NdefMessage[] messages = new NdefMessage[rawMessages.length];
@@ -42,7 +42,7 @@ class GetLogin_ID {
      * @param messag NFC Data Exchange Format deve contenere il pacchetto con header e payload
      * @return Stringa contenente il payload di messag
      */
-    static String getNFCPayload(NdefMessage messag){
+    public static String getNFCPayload(NdefMessage messag){
         resetSb();
         for (NdefRecord r: messag.getRecords()) {
             if (r.getTnf() == NdefRecord.TNF_WELL_KNOWN) {
@@ -74,10 +74,9 @@ class GetLogin_ID {
      * Si concatena character alla stringa internaquando si usa il lettore esterno
      * @param character carattere da concatenare se il suo valore è diverso da 0
      */
-    static void concatToString(int character){
+    public static void concatToString(int character){
         if (character != 0 && sb.length()<10) { //non è un carattere non speciale
             sb.append((char) character);
-            //progress.setVisibility(View.VISIBLE);
         }
     }
 
@@ -85,7 +84,7 @@ class GetLogin_ID {
      * ritorna il valore momentaneo dell'id costruito tramite il lettore
      * @return la stringa che rappresenta l'id
      */
-    static String get_ID(){
+    public static String get_ID(){
         String save = sb.toString();
         resetSb();
         return save;

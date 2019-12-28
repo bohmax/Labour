@@ -1,8 +1,10 @@
-package com.example.labour;
+package com.example.labour.async;
 
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.example.labour.interfacce.TaskListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +16,7 @@ public class ServerRequest extends AsyncTask<String, Void, Boolean> {
     private TaskListener activity;
     private String id;
 
-    ServerRequest(Activity activity) throws NullPointerException{
+    public ServerRequest(Activity activity) throws NullPointerException{
         if (activity==null) throw new NullPointerException();
         this.activity = (TaskListener) activity;
     }

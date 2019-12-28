@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.utility;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -7,12 +7,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-class Permission_utility {
+public class Permission_utility {
 
-    static final int NFC_PERMISSION = 1;
-    static final int FOTO_PERMISSION = 2;
+    public static final int NFC_PERMISSION = 1;
+    public static final int FOTO_PERMISSION = 2;
 
-    static boolean requestPermission(Activity activity, String permission, int requestCode, String explenation){
+    public static boolean requestPermission(Activity activity, String permission, int requestCode, String explenation){
         //check permission
         if(ContextCompat.checkSelfPermission(activity, permission)
                 != PackageManager.PERMISSION_GRANTED){
@@ -29,7 +29,7 @@ class Permission_utility {
         } else return true;
     }
 
-    static boolean requestPermission(Fragment fragment, Activity act, String[] permissions, int requestCode, String explenation){
+    public static boolean requestPermission(Fragment fragment, Activity act, String[] permissions, int requestCode, String explenation){
         boolean granted = true;
         int i = 0;
         while (i < permissions.length && granted) {

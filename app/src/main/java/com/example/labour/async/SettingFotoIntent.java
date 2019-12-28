@@ -1,6 +1,9 @@
-package com.example.labour;
+package com.example.labour.async;
 import android.os.AsyncTask;
 import androidx.fragment.app.DialogFragment;
+
+import com.example.labour.interfacce.FileInterface;
+import com.example.labour.utility.File_utility;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +12,7 @@ public class SettingFotoIntent extends AsyncTask<String, Void, File> {
 
     private FileInterface df;
 
-    SettingFotoIntent(DialogFragment df) throws NullPointerException, ClassCastException{
+    public SettingFotoIntent(DialogFragment df) throws NullPointerException, ClassCastException{
         if (df == null) throw new NullPointerException();
         if (!(df instanceof FileInterface)) throw new ClassCastException();
         this.df =(FileInterface) df;

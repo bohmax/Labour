@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.fragment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -32,6 +32,15 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.labour.activity.MainActivity;
+import com.example.labour.async.PhotoLoader;
+import com.example.labour.async.RenameFile;
+import com.example.labour.async.SettingFotoIntent;
+import com.example.labour.async.DeleteFile;
+import com.example.labour.interfacce.FileInterface;
+import com.example.labour.MyDatabase;
+import com.example.labour.R;
+import com.example.labour.utility.Permission_utility;
 import com.google.android.material.textfield.TextInputEditText;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
@@ -226,7 +235,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     //--------------- popup & image click -----------------
-    void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         final PopupMenu popup = new PopupMenu(getContext(), v);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.sesso, popup.getMenu());
@@ -241,7 +250,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         return true;
     }
 
-    void onImageClick() {
+    public void onImageClick() {
         progress.setVisibility(View.VISIBLE);
         new SettingFotoIntent(this).execute(picfolder, mCurrentPhotoPath);
     }

@@ -1,9 +1,11 @@
-package com.example.labour;
+package com.example.labour.async;
 
 import android.os.AsyncTask;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
+
+import com.example.labour.utility.File_utility;
 
 import java.io.File;
 
@@ -11,7 +13,7 @@ public class RenameFile extends AsyncTask<String, Void, File> {
 
     private DialogFragment df;
 
-    RenameFile(DialogFragment df) throws NullPointerException{
+    public RenameFile(DialogFragment df) throws NullPointerException{
         if (df == null) throw new NullPointerException();
         this.df = df;
     }

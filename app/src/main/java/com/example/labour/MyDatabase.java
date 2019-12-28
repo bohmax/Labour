@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-class MyDatabase {
+public class MyDatabase {
 
     private static SQLiteDatabase database;
     private final static String OP_TABLE="Operai"; // name of table
@@ -17,7 +17,7 @@ class MyDatabase {
     private final static String OP_SESSO="sesso";
     private final static String OP_ETA="eta";
 
-    MyDatabase(Context context){
+    public MyDatabase(Context context){
         if (database == null) {
             Database dbHelper = Database.getInstance(context);
             database = dbHelper.getWritableDatabase();
@@ -26,7 +26,7 @@ class MyDatabase {
 
 
 
-    long createRecords(String id, String name, String cognome, String gender, int eta) {
+    public long createRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_ID, id);
         values.put(OP_NOME, name);
@@ -36,7 +36,7 @@ class MyDatabase {
         return database.insert(OP_TABLE, null, values);
     }
 
-    void updateRecords(String id, String name, String cognome, String gender, int eta) {
+    public void updateRecords(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
@@ -45,7 +45,7 @@ class MyDatabase {
         database.update(OP_TABLE, values, OP_ID+"=?", new String[]{id});
     }
 
-    String[] searchById(String id) {
+    public String[] searchById(String id) {
         Cursor cur = database.rawQuery("SELECT * FROM " + OP_TABLE + " WHERE " + OP_ID + "=?", new String[]{id});
         cur.moveToFirst();
         String[] elem ={

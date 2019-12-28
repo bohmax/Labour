@@ -1,7 +1,9 @@
-package com.example.labour;
+package com.example.labour.activity;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+
+import com.example.labour.R;
 
 public class PreferenceActivity extends android.preference.PreferenceActivity {
 

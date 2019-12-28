@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +17,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.labour.async.ServerRequest;
+import com.example.labour.interfacce.TaskListener;
+import com.example.labour.fragment.MenuFragment;
+import com.example.labour.MyDatabase;
+import com.example.labour.R;
+import com.example.labour.getID_NFC;
 import com.google.android.material.snackbar.Snackbar;
 
 public class LoginActivity extends AppCompatActivity implements TaskListener {
@@ -102,9 +108,9 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     protected void onNewIntent(Intent intent) { //viene chiamata quando lancia la pending intent perchè il flag nell intent è FLAG_ACTIVITY_SINGLE_TOP
         super.onNewIntent(intent);
 
-        NdefMessage[] messages = GetLogin_ID.getNdefMessages(intent);
+        NdefMessage[] messages = getID_NFC.getNdefMessages(intent);
         if(messages != null){
-            richiediAccesso(GetLogin_ID.getNFCPayload(messages[0]));
+            richiediAccesso(getID_NFC.getNFCPayload(messages[0]));
         } else
             Log.i("Empy", "empty text!");
     }
@@ -114,7 +120,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode){
             case KeyEvent.KEYCODE_ENTER: {
-                richiediAccesso(GetLogin_ID.get_ID());
+                richiediAccesso(getID_NFC.get_ID());
                 break;
             }
             case (KeyEvent.KEYCODE_BACK): {
@@ -122,7 +128,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
                 break;
             }
             default: { //aggiungi il valore
-                GetLogin_ID.concatToString(event.getUnicodeChar());
+                getID_NFC.concatToString(event.getUnicodeChar());
             }
         }
         return super.onKeyDown(keyCode, event);

@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.fragment;
 
 import android.content.Context;
 import android.net.Uri;
@@ -14,6 +14,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.example.labour.async.PhotoLoader;
+import com.example.labour.interfacce.FileInterface;
+import com.example.labour.MyDatabase;
+import com.example.labour.R;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
@@ -95,11 +99,11 @@ public class ProfileFragment extends Fragment implements FileInterface {
     }
 
     //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
-    void Dismiss() {
+    public void Dismiss() {
         setView(db.searchById(user_ID));
     }
 
-    void onEditClick(){
+    public void onEditClick(){
         if(sf==null)
             sf = new SubscribeFragment();
         Bundle bundle = new Bundle();
@@ -114,11 +118,11 @@ public class ProfileFragment extends Fragment implements FileInterface {
         sf.show(fm, "SubFG TAG");
     }
 
-    void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         sf.showPopup(v);
     }
 
-    void onImageClick() {
+    public void onImageClick() {
         sf.onImageClick();
     }
 

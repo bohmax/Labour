@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.labour.activity.PreferenceActivity;
+import com.example.labour.R;
 
 public class MenuFragment extends Fragment {
 

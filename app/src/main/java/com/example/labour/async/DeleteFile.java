@@ -1,17 +1,19 @@
-package com.example.labour;
+package com.example.labour.async;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.labour.utility.File_utility;
+
 public class DeleteFile extends AsyncTask<String, Void, Boolean> {
 
     private DialogFragment df;
 
-    DeleteFile(){ }
+    public DeleteFile(){ }
 
-    DeleteFile(DialogFragment df){
+    public DeleteFile(DialogFragment df){
         this.df = df;
     }
 

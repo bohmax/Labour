@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.activity;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.fragment.MenuFragment;
+import com.example.labour.fragment.PackageFragment;
+import com.example.labour.fragment.ProfileFragment;
+import com.example.labour.R;
+import com.example.labour.fragment.WorkFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
