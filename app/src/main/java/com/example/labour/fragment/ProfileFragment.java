@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.labour.async.PhotoLoader;
-import com.example.labour.interfacce.FileInterface;
+import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
 import com.mikhaellopez.circularimageview.CircularImageView;
@@ -23,7 +23,7 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
-public class ProfileFragment extends Fragment implements FileInterface {
+public class ProfileFragment extends Fragment implements FileInterfaceListener {
 
     private String user_ID="pippotest";
     private String[] userInfo;

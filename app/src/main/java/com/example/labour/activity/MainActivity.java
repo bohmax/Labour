@@ -15,12 +15,13 @@ import com.example.labour.fragment.PackageFragment;
 import com.example.labour.fragment.ProfileFragment;
 import com.example.labour.R;
 import com.example.labour.fragment.WorkFragment;
+import com.example.labour.interfacce.CardViewClickListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener {
 
     private String user_ID="pippotest";
-    private boolean exist;
+    private boolean exist = true; //togli l'assegnazione
     private MenuFragment menuf;
     private PackageFragment packf = new PackageFragment();
     private WorkFragment workf = new WorkFragment();
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public void onImageClick(View v) {
         if(active instanceof PackageFragment)
-            packf.onImageClick(v);
+            packf.onImageClick();
         else if (active instanceof ProfileFragment)
             proff.onImageClick();
     }
@@ -143,4 +144,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         proff.Dismiss();
     }
 
+    @Override
+    public void onCardViewClick(int pos) {
+        workf.newWork(packf.getPacks(), pos);
+    }
 }

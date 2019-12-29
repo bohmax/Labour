@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +16,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.Package_item;
 import com.example.labour.R;
+import com.example.labour.interfacce.WorkListener;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-public class WorkFragment extends Fragment implements SensorEventListener {
+import java.util.List;
+
+public class WorkFragment extends Fragment implements SensorEventListener, WorkListener {
 
     private String passcount;
     private int passi;
@@ -30,7 +35,7 @@ public class WorkFragment extends Fragment implements SensorEventListener {
     private Sensor accelerometer;
     private Sensor magnetometer;
 
-    Boolean ass = false;
+    //Boolean ass = false;
 
     private float[] mGravity; //per gestione accelerometro e magnetometro
     private float[] mGeomagnetic;
@@ -180,5 +185,11 @@ public class WorkFragment extends Fragment implements SensorEventListener {
             case 0:
             default: return "N";
         }
+    }
+
+
+    @Override
+    public void newWork(List<Package_item> list, int pos) {
+        Log.i("Cristinata", list.get(pos).getTitle());
     }
 }

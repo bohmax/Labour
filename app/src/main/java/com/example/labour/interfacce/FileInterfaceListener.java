@@ -2,7 +2,7 @@ package com.example.labour.interfacce;
 
 import java.io.File;
 
-public interface FileInterface {
+public interface FileInterfaceListener {
 
     /**
      * chiamata quando l'asynctask dedicato alla creazione dei tempfile finisce, restituisce il File creato dall'async

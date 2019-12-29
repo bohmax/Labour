@@ -37,7 +37,7 @@ import com.example.labour.async.PhotoLoader;
 import com.example.labour.async.RenameFile;
 import com.example.labour.async.SettingFotoIntent;
 import com.example.labour.async.DeleteFile;
-import com.example.labour.interfacce.FileInterface;
+import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
 import com.example.labour.utility.Permission_utility;
@@ -52,7 +52,7 @@ import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
-public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, FileInterface {
+public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, FileInterfaceListener {
 
     private static final int FOTO_REQUEST = 0;
     private Context mContext;
@@ -72,6 +72,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mContext = context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mContext = null;
     }
 
     @NonNull
@@ -235,7 +241,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     //--------------- popup & image click -----------------
-    public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
+    void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         final PopupMenu popup = new PopupMenu(getContext(), v);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.sesso, popup.getMenu());
@@ -250,7 +256,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         return true;
     }
 
-    public void onImageClick() {
+    void onImageClick() {
         progress.setVisibility(View.VISIBLE);
         new SettingFotoIntent(this).execute(picfolder, mCurrentPhotoPath);
     }

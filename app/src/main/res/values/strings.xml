@@ -23,4 +23,6 @@
     <string name="passi">Ti mancano: </string>
     <string name="pacchi">Pacchi</string>
     <string name="lavoro">Lavoro</string>
+    <string name="listview">ListView</string>
+    <string name="scansiona">Scegli un pacco da scansionare</string>
 </resources>
