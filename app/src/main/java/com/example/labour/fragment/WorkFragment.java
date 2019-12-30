@@ -1,12 +1,12 @@
 package com.example.labour.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +21,14 @@ import androidx.fragment.app.Fragment;
 import com.example.labour.Package_item;
 import com.example.labour.R;
 import com.example.labour.interfacce.WorkListener;
-
-import org.apache.commons.collections4.queue.CircularFifoQueue;
+import com.example.labour.utility.Orientation_utility;
+import com.google.zxing.integration.android.IntentIntegrator;
 
 import java.util.List;
 
-public class WorkFragment extends Fragment implements SensorEventListener, WorkListener {
+import static android.app.Activity.RESULT_OK;
+
+public class WorkFragment extends Fragment implements SensorEventListener, WorkListener, View.OnClickListener {
 
     private String passcount;
     private int passi;
@@ -38,15 +40,8 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     private Sensor steps;
     private Sensor accelerometer;
     private Sensor magnetometer;
-
-    //Boolean ass = false;
-
-    private float[] mGravity; //per gestione accelerometro e magnetometro
-    private float[] mGeomagnetic;
-    private final int bufsize = 30; //dimensione della coda
-    private CircularFifoQueue<Float> buf = new CircularFifoQueue<>(bufsize); //cerco una media per l'azimuth in modo da non avere un risultato ballerino
-    private float somma = 0;//per avitae di sommare ogni volta tutti gli elementi dell array
-    private int last_inserted = 0; //indice dell'elemento da rimuovere dalla coda
+    private Orientation_utility orientation = new Orientation_utility();
+    private final int QRCODE = 0;
 
     @Nullable
     @Override
@@ -90,6 +85,9 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         image = view.findViewById(R.id.image);
         scansiona = view.findViewById(R.id.scansiona);
         count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
+
+        scansiona.setOnClickListener(this);
+        setScansionaOn();
     }
 
     @Override
@@ -123,41 +121,22 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         //viene generato un evento per ogni passo
         switch (event.sensor.getType()){
             case Sensor.TYPE_STEP_DETECTOR:{
-                passi -= 1;
+                if (passi != 0)
+                    passi -= 1;
+                else setScansionaOn();
                 count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
                 return;
             }
             case Sensor.TYPE_ACCELEROMETER:
-                mGravity = event.values;
+                orientation.setmGravity(event.values);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                mGeomagnetic = event.values;
+                orientation.setmGeomagnetic(event.values);
                 break;
         }
-        if (mGravity != null && mGeomagnetic != null) {
-            float[] R = new float[9];
-            float[] I = new float[9];
-            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
-            if (success) {
-                float[] orientation = new float[3];
-                SensorManager.getOrientation(R, orientation);
-                float azimut = orientation[0]; // orientation contains: azimut, pitch and roll, azimut è in radianti
-                float rotation = (float)(Math.toDegrees(azimut)+360)%360;
-                if (buf.size()==bufsize) { //se la coda è piena rimuovi il primo elemento da somma e aggiungi il nuovo elemento
-                    float value = buf.get(last_inserted);
-                    somma -= value;
-                    somma += rotation;
-                    buf.add(rotation);
-                    last_inserted = (last_inserted+1)%bufsize;
-                    float media = somma /(float) buf.size();
-                    coordinata.setText(String.valueOf(Math.round(media)));
-                    direzione.setText(getDirection(media));
-                } else{
-                    somma += rotation;
-                    buf.add(rotation);
-                }
-            }
-        }
+        float media = orientation.getRotatioMedia();
+        coordinata.setText(String.valueOf(Math.round(media)));
+        direzione.setText(orientation.getDirection(media));
     }
 
     @Override
@@ -165,36 +144,23 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
     }
 
-    private String getDirection(float absolute){
-        int range = (int) (absolute/16);
-        switch (range) {
-            case 1:
-            case 2:
-                return "NE";
-            case 3:
-            case 4:
-                return "E";
-            case 5:
-            case 6:
-                return "SE";
-            case 7:
-            case 8:
-                return "S";
-            case 9:
-            case 10:
-                return "SW";
-            case 11:
-            case 12:
-                return "W";
-            case 13:
-            case 14:
-                return "NW";
-            case 15:
-            case 0:
-            default: return "N";
+    @Override
+    public void onClick(View v) {
+        if (v == scansiona){
+            startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == QRCODE) {
+            if (resultCode == RESULT_OK) {
+                //String contents = data.getStringExtra("SCAN_RESULT");
+                setScansionaOff();
+            }
+        }
+    }
 
     @Override
     public void newWork(List<Package_item> list, int pos) {
@@ -203,4 +169,17 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         descrizione.setText(item.getDescription());
         scansiona.setText(R.string.arrive_per);
     }
+
+    private void setScansionaOn(){
+        scansiona.setText(getString(R.string.scansionamento));
+        scansiona.setAlpha(1);
+        scansiona.setClickable(true);
+    }
+
+    private void setScansionaOff(){
+        scansiona.setText(getString(R.string.seleziona_pacco));
+        scansiona.setAlpha((float) 0.5);
+        scansiona.setClickable(false);
+    }
+
 }
