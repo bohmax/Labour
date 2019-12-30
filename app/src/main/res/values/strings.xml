@@ -25,4 +25,9 @@
     <string name="lavoro">Lavoro</string>
     <string name="listview">ListView</string>
     <string name="scansiona">Scegli un pacco da scansionare</string>
+    <string name="image">Image</string>
+    <string name="pacco">Seleziona un pacco</string>
+    <string name="descizione_lunga">descizione non disponibile</string>
+    <string name="seleziona_pacco">Devi prima selezionare un pacco</string>
+    <string name="arrive_per">Arriva a destinazione per scansionare</string>
 </resources>

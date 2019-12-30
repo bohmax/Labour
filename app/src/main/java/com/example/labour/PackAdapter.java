@@ -73,9 +73,10 @@
             @Override
             public void onBindViewHolder(PackViewHolder PackViewHolder, int i) {
                 PackViewHolder.cv.setTag(i);
-                PackViewHolder.titolo.setText(packs.get(i).getTitle());
-                PackViewHolder.descr.setText(packs.get(i).getDescription());
-                PackViewHolder.photo.setImageResource(packs.get(i).getPhotoId());
+                Package_item item = packs.get(i);
+                PackViewHolder.titolo.setText(item.getTitle());
+                PackViewHolder.descr.setText(item.getDescription());
+                PackViewHolder.photo.setImageResource(item.getPhotoId());
             }
 
             @Override

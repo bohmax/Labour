@@ -13,7 +13,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:padding="16dp" >
 
             <ImageView
@@ -25,21 +25,29 @@
                 android:layout_marginEnd="16dp"
                 android:contentDescription="@string/listview" />
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/pack_photo"
+                android:layout_centerVertical="true">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
                 android:id="@+id/pack_title"
-                android:layout_toEndOf="@+id/pack_photo"
-                android:layout_alignParentTop="true"
                 android:textSize="20sp"
                 />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
                 android:id="@+id/pack_descr"
-                android:layout_toEndOf="@+id/pack_photo"
                 android:layout_below="@+id/pack_title"
                 />
+
+            </RelativeLayout>
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

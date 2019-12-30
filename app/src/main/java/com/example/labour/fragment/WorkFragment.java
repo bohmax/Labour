@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +31,9 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     private String passcount;
     private int passi;
     private Context context;
-    private TextView count, coordinata, direzione;
+    private TextView titolo, descrizione, count, coordinata, direzione;
+    private ImageView image;
+    private Button scansiona;
     private SensorManager sm;
     private Sensor steps;
     private Sensor accelerometer;
@@ -81,6 +85,10 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         count = view.findViewById(R.id.passi);
         coordinata = view.findViewById(R.id.orientation);
         direzione = view.findViewById(R.id.direzione);
+        titolo = view.findViewById(R.id.titolo);
+        descrizione = view.findViewById(R.id.descr);
+        image = view.findViewById(R.id.image);
+        scansiona = view.findViewById(R.id.scansiona);
         count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
     }
 
@@ -190,6 +198,9 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
     @Override
     public void newWork(List<Package_item> list, int pos) {
-        Log.i("Cristinata", list.get(pos).getTitle());
+        Package_item item = list.get(pos);
+        titolo.setText(item.getTitle());
+        descrizione.setText(item.getDescription());
+        scansiona.setText(R.string.arrive_per);
     }
 }

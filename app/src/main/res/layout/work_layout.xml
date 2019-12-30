@@ -1,35 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:fillViewport="true"
+    android:orientation="vertical"
     android:padding="10dp">
 
-    <TextView
-        android:id="@+id/passi"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/lin"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/passi"
-        android:textSize="32sp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
-    <TextView
-        android:id="@+id/orientation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="22sp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_below="@id/passi"/>
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/direzione"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="22sp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_below="@id/orientation"/>
+        <RelativeLayout
+            android:id="@+id/relative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-</RelativeLayout>
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="@string/image"
+                app:srcCompat="@drawable/package_default" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/image">
+
+                <TextView
+                    android:id="@+id/titolo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:text="@string/pacco"
+                    android:textSize="23sp" />
+
+                <TextView
+                    android:id="@+id/descr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/titolo"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:maxLines="3"
+                    android:text="@string/descizione_lunga" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relative1"
+            android:layout_width="match_parent"
+            android:layout_height="115dp"
+            android:layout_gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/scansiona"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:clickable="false"
+                android:alpha="0.5"
+                android:text="@string/seleziona_pacco" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/passi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/passi"
+                android:textSize="32sp" />
+
+            <TextView
+                android:id="@+id/orientation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/direzione"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
