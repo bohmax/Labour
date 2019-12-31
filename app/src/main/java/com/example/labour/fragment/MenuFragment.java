@@ -27,12 +27,10 @@ public class MenuFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings :
-                startActivity(new Intent(getContext(), PreferenceActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.settings) {
+            startActivity(new Intent(getContext(), PreferenceActivity.class));
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

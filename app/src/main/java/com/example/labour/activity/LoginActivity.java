@@ -136,7 +136,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
 
     private void tryInsertDB(String id){
         Intent i = new Intent(this, MainActivity.class);
-        if(mydb.createRecords(id, "Mario", "Rossi", "Uomo", 22) != -1)
+        if(mydb.createRecordsOperai(id, "Mario", "Rossi", "Uomo", 22) != -1)
             i.putExtra("Exist", false);
         else
             i.putExtra("Exist", true);

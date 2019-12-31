@@ -13,7 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.labour.PackAdapter;
 import com.example.labour.async.PhotoLoader;
 import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
@@ -35,6 +38,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
     private TextView nome, carratteristiche;
     private CircularImageView civ;
     private ProgressBar progress;
+    private RecyclerView rv;
     private MyDatabase db;
 
     @Nullable
@@ -64,12 +68,23 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         db = new MyDatabase(getContext());
+        //parte profilo
         nome = view.findViewById(R.id.nome);
         carratteristiche = view.findViewById(R.id.caratteristiche);
         civ = view.findViewById(R.id.pic);
         progress = view.findViewById(R.id.scroll);
         progress.setVisibility(View.GONE);
-        setView(db.searchById(user_ID));
+        //-------
+        //parte recycleview
+        rv = view.findViewById(R.id.rv);
+
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        rv.setLayoutManager(llm);
+
+        PackAdapter adapter = new PackAdapter(getActivity(), db.searchByIdPacchi(user_ID));
+        rv.setAdapter(adapter);
+        //-------
+        setView(db.searchByIdOperai(user_ID));
     }
 
     @Override
@@ -100,7 +115,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
 
     //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
     public void Dismiss() {
-        setView(db.searchById(user_ID));
+        setView(db.searchByIdOperai(user_ID));
     }
 
     public void onEditClick(){

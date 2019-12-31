@@ -31,4 +31,5 @@
     <string name="seleziona_pacco">Devi prima selezionare un pacco</string>
     <string name="arrive_per">Arriva a destinazione per scansionare</string>
     <string name="scansionamento">Scansiona!</string>
+    <string name="completati">Task Completati</string>
 </resources>

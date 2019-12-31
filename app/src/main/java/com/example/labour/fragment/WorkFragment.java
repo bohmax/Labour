@@ -1,7 +1,9 @@
 package com.example.labour.fragment;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +25,7 @@ import com.example.labour.Package_item;
 import com.example.labour.R;
 import com.example.labour.interfacce.WorkListener;
 import com.example.labour.utility.Orientation_utility;
+import com.example.labour.utility.Permission_utility;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import java.util.List;
@@ -147,7 +151,8 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onClick(View v) {
         if (v == scansiona){
-            startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA}, Permission_utility.FOTO_PERMISSION, "Hai bisogno di utilizzare la camera per finire con il pacco"))
+                startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
         }
     }
 
@@ -159,6 +164,20 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 //String contents = data.getStringExtra("SCAN_RESULT");
                 setScansionaOff();
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == Permission_utility.FOTO_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                //fai partire l'intent
+                startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
+            } else {
+                Toast.makeText(getContext(), "Permessi necessari per scannerizzare il qrcode", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 

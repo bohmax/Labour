@@ -5,10 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MyDatabase {
 
     private static SQLiteDatabase database;
     private final static String OP_TABLE="Operai"; // name of table
+    private final static String OP_PACCHI="Pacchi"; // name of table
 
     //campi della tabella operai
     private final static String OP_ID="_ID";
@@ -16,6 +20,11 @@ public class MyDatabase {
     private final static String OP_COGNOME="cognome";
     private final static String OP_SESSO="sesso";
     private final static String OP_ETA="eta";
+
+    //campi della tabella pacchi
+    private final static String OP_TITOLO="titolo";
+    private final static String OP_DESCR="descr";
+    private final static String OP_EXT="Operai_ID";
 
     public MyDatabase(Context context){
         if (database == null) {
@@ -26,7 +35,7 @@ public class MyDatabase {
 
 
 
-    public long createRecords(String id, String name, String cognome, String gender, int eta) {
+    public long createRecordsOperai(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_ID, id);
         values.put(OP_NOME, name);
@@ -36,7 +45,15 @@ public class MyDatabase {
         return database.insert(OP_TABLE, null, values);
     }
 
-    public void updateRecords(String id, String name, String cognome, String gender, int eta) {
+    public long createRecordsPacchi(String titolo, String descrizione, String operai_id) {
+        ContentValues values = new ContentValues();
+        values.put(OP_TITOLO, titolo);
+        values.put(OP_DESCR, descrizione);
+        values.put(OP_EXT, operai_id);
+        return database.insert(OP_PACCHI, null, values);
+    }
+
+    public void updateRecordsOperai(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
         values.put(OP_NOME, name);
         values.put(OP_COGNOME, cognome);
@@ -45,7 +62,7 @@ public class MyDatabase {
         database.update(OP_TABLE, values, OP_ID+"=?", new String[]{id});
     }
 
-    public String[] searchById(String id) {
+    public String[] searchByIdOperai(String id) {
         Cursor cur = database.rawQuery("SELECT * FROM " + OP_TABLE + " WHERE " + OP_ID + "=?", new String[]{id});
         cur.moveToFirst();
         String[] elem ={
@@ -56,6 +73,19 @@ public class MyDatabase {
         };
         cur.close();
         return elem;
+    }
+
+    public List<Package_item> searchByIdPacchi(String id) {
+        Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " + OP_EXT + "=?", new String[]{id});
+        List<Package_item> list= new ArrayList<>();
+        while (cur.moveToNext()) {
+            list.add( new Package_item(
+                    cur.getString(cur.getColumnIndex(OP_TITOLO)),
+                    cur.getString(cur.getColumnIndex(OP_DESCR)),
+                    R.drawable.package_default));
+        }
+        cur.close();
+        return list;
     }
 
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){
