@@ -3,6 +3,7 @@ package com.example.labour.fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileFragment extends Fragment implements FileInterfaceListener, WorkListener {
@@ -42,7 +44,8 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     private CircularImageView civ;
     private ProgressBar progress;
     private PackAdapter adapter;
-    private List<Package_item> list;
+    private RecyclerView rv;
+    private Parcelable layout;
     private MyDatabase db;
 
     @Nullable
@@ -80,14 +83,24 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         progress.setVisibility(View.GONE);
         //-------
         //parte recycleview
-        RecyclerView rv = view.findViewById(R.id.rv);
-
+        rv = view.findViewById(R.id.rv);
+        rv.setNestedScrollingEnabled(false);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-        rv.setLayoutManager(llm);
 
-        list = db.searchByIdPacchi(user_ID);
-        adapter = new PackAdapter(getActivity(), list);
-        rv.setAdapter(adapter);
+        if (savedInstanceState != null){
+            layout = savedInstanceState.getParcelable("list_state");
+            ArrayList<Package_item> list_data = savedInstanceState.getParcelableArrayList("list_data");
+            if (list_data != null && layout != null){
+                rv.setLayoutManager(llm);
+                llm.onRestoreInstanceState(layout);
+                adapter = new PackAdapter(null, list_data);
+                rv.setAdapter(adapter);
+            }
+            else setRecyclerView(llm);
+        }
+        else {
+            setRecyclerView(llm);
+        }
         //-------
         setView(db.searchByIdOperai(user_ID));
     }
@@ -100,10 +113,11 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (fm.findFragmentByTag("SubFG TAG") != null)
-            fm.putFragment(outState, "SubscribeFragment", sf);
+    public void onResume() {
+        super.onResume();
+        if (rv.getLayoutManager() != null && layout != null)
+            rv.getLayoutManager().onRestoreInstanceState(layout);
+
     }
 
     private void setView(String[] str){
@@ -138,6 +152,18 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         sf.show(fm, "SubFG TAG");
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (fm.findFragmentByTag("SubFG TAG") != null)
+            fm.putFragment(outState, "SubscribeFragment", sf);
+        if (rv.getLayoutManager() != null) {
+            outState.putParcelable("list_state", rv.getLayoutManager().onSaveInstanceState());
+            outState.putParcelableArrayList("list_data", adapter.getPacks());
+        }
+
+    }
+
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
         sf.showPopup(v);
     }
@@ -164,5 +190,12 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     @Override
     public void workCompleted(Package_item item) {
         adapter.addElement(item);
+    }
+
+    private void setRecyclerView(RecyclerView.LayoutManager llm){
+        rv.setLayoutManager(llm);
+        ArrayList<Package_item> list = db.searchByIdPacchi(user_ID);
+        adapter = new PackAdapter(null, list);
+        rv.setAdapter(adapter);
     }
 }

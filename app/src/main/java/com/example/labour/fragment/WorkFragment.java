@@ -68,6 +68,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
         if(savedInstanceState!=null){
             passi = savedInstanceState.getInt("passi");
+            item = savedInstanceState.getParcelable("pack");
         }
         else {
             passi = (int)(Math.random() * 10);
@@ -93,6 +94,10 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         scansiona = view.findViewById(R.id.scansiona);
         count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
 
+        if (item != null){
+            titolo.setText(item.getTitle());
+            descrizione.setText(item.getDescription());
+        }
         scansiona.setOnClickListener(this);
         setScansionaOn();
     }
@@ -109,18 +114,6 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         sm.registerListener(this, steps, SensorManager.SENSOR_DELAY_UI);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         sm.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        sm.unregisterListener(this);
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("passi", passi);
     }
 
     @Override
@@ -169,11 +162,13 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 titolo.setText(R.string.pacco);
                 descrizione.setText(R.string.descizione_lunga);
                 callback.workCompleted(item);
+                item = null;
             } else{
                 setScansionaOff();
                 titolo.setText(R.string.pacco);
                 descrizione.setText(R.string.descizione_lunga);
                 callback.workCompleted(item);
+                item = null;
             }
         }
     }
@@ -190,6 +185,19 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sm.unregisterListener(this);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("passi", passi);
+        outState.putParcelable("pack", item);
     }
 
     public void setonCompledlistener(WorkListener act){

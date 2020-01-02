@@ -13,7 +13,7 @@
 
     import com.example.labour.interfacce.CardViewClickListener;
 
-    import java.util.List;
+    import java.util.ArrayList;
 
     public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder>{
             static class PackViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -29,12 +29,11 @@
                     titolo = itemView.findViewById(R.id.pack_title);
                     descr = itemView.findViewById(R.id.pack_descr);
                     photo = itemView.findViewById(R.id.pack_photo);
-
-                    cv.setOnClickListener(this);
                 }
 
                 void setonCardViewClickListener(CardViewClickListener activity){
                     listener = activity;
+                    cv.setOnClickListener(this);
                 }
 
                 @Override
@@ -46,14 +45,15 @@
 
             }
 
-            private List<Package_item> packs;
+            private ArrayList<Package_item> packs;
             private CardViewClickListener act;
 
-            public PackAdapter(Activity act, List<Package_item> packs) throws NullPointerException, ClassCastException{
-                if(act == null || packs == null) throw new NullPointerException();
-                if (!(act instanceof CardViewClickListener)) throw new ClassCastException();
+            public PackAdapter(Activity act, ArrayList<Package_item> packs) throws NullPointerException, ClassCastException{
+                if(packs == null) throw new NullPointerException();
                 this.packs = packs;
-                this.act = (CardViewClickListener) act;
+                if (act != null)
+                    if (!(act instanceof CardViewClickListener)) throw new ClassCastException();
+                    this.act = (CardViewClickListener) act;
             }
 
             @Override
@@ -66,7 +66,8 @@
             public PackViewHolder onCreateViewHolder(ViewGroup vg, int i) {
                 View v = LayoutInflater.from(vg.getContext()).inflate(R.layout.card_layout, vg, false);
                 PackViewHolder pv = new PackViewHolder(v);
-                pv.setonCardViewClickListener(act);
+                if (act != null)
+                    pv.setonCardViewClickListener(act);
                 return pv;
             }
 
@@ -95,5 +96,7 @@
                 notifyItemInserted(packs.size() - 1);
             }
 
-
+        public ArrayList<Package_item> getPacks() {
+            return packs;
         }
+    }

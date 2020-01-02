@@ -25,14 +25,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener, WorkListener {
 
     private String user_ID="pippotest";
-    private boolean exist = true; //togli l'assegnazione
+    private boolean new_user = true; //togli l'assegnazione
     private MenuFragment menuf;
     private PackageFragment packf = new PackageFragment();
     private WorkFragment workf = new WorkFragment();
     private ProfileFragment proff = new ProfileFragment();
     private Fragment active = packf;
 
-    private int pos_lastSelectedItem; //
+    private int pos_lastSelectedItem; //l'ultima cardview selezionata su package fragment
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         Bundle extra = getIntent().getExtras();
         if (extra != null) {
-            exist = extra.getBoolean("Exist");
+            new_user = extra.getBoolean("Exist");
             user_ID = extra.getString("ID");
         }
 
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             packf = (PackageFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Package");
             workf = (WorkFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Passi");
             proff = (ProfileFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Profilo");
+            pos_lastSelectedItem = savedInstanceState.getInt("last_insert");
             Log.i("Dolore", "msg " + savedInstanceState.getInt("Active"));
             switch (savedInstanceState.getInt("Active")) {
                 case 1: {
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Bundle bund = new Bundle();
             bund.putString("ID", user_ID);
             bund.putString("Path_Photo", getApplicationInfo().dataDir+"/files/");
-            bund.putBoolean("Exist", exist);
+            bund.putBoolean("Exist", new_user);
             packf.setArguments(bund);
             proff.setArguments(bund);
 
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         else if (active instanceof ProfileFragment)
             outState.putInt("Active", 3);
         else outState.putInt("Active", 2);
+        outState.putInt("last_insert", pos_lastSelectedItem);
 
     }
 
@@ -166,5 +168,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void workCompleted(Package_item item) {
         proff.workCompleted(item);
         packf.removeSelectedItem(pos_lastSelectedItem);
+        pos_lastSelectedItem = -1;
     }
 }

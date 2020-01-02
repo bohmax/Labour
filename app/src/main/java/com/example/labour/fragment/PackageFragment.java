@@ -23,7 +23,7 @@ import java.util.List;
 public class PackageFragment extends Fragment {
 
     private boolean exist = false;
-    private List<Package_item> packs;
+    private ArrayList<Package_item> packs;
     private String user_ID = "pippotest";
     private String pathfile;
     private PackAdapter adapter;

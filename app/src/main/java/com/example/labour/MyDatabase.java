@@ -75,9 +75,9 @@ public class MyDatabase {
         return elem;
     }
 
-    public List<Package_item> searchByIdPacchi(String id) {
+    public ArrayList<Package_item> searchByIdPacchi(String id) {
         Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " + OP_EXT + "=?", new String[]{id});
-        List<Package_item> list= new ArrayList<>();
+        ArrayList<Package_item> list= new ArrayList<>();
         while (cur.moveToNext()) {
             list.add( new Package_item(
                     cur.getString(cur.getColumnIndex(OP_TITOLO)),
