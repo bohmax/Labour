@@ -84,5 +84,16 @@
                 super.onAttachedToRecyclerView(recyclerView);
             }
 
+            public void removeLastItem(int pos){
+                packs.remove(pos);
+                notifyItemRemoved(pos);
+                notifyItemRangeChanged(pos, packs.size());
+            }
+
+            public void addElement(Package_item item){
+                packs.add(item);
+                notifyItemInserted(packs.size() - 1);
+            }
+
 
         }

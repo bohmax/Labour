@@ -17,16 +17,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.labour.PackAdapter;
+import com.example.labour.Package_item;
 import com.example.labour.async.PhotoLoader;
 import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
+import com.example.labour.interfacce.WorkListener;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
-public class ProfileFragment extends Fragment implements FileInterfaceListener {
+public class ProfileFragment extends Fragment implements FileInterfaceListener, WorkListener {
 
     private String user_ID="pippotest";
     private String[] userInfo;
@@ -38,7 +41,8 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
     private TextView nome, carratteristiche;
     private CircularImageView civ;
     private ProgressBar progress;
-    private RecyclerView rv;
+    private PackAdapter adapter;
+    private List<Package_item> list;
     private MyDatabase db;
 
     @Nullable
@@ -76,12 +80,13 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
         progress.setVisibility(View.GONE);
         //-------
         //parte recycleview
-        rv = view.findViewById(R.id.rv);
+        RecyclerView rv = view.findViewById(R.id.rv);
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         rv.setLayoutManager(llm);
 
-        PackAdapter adapter = new PackAdapter(getActivity(), db.searchByIdPacchi(user_ID));
+        list = db.searchByIdPacchi(user_ID);
+        adapter = new PackAdapter(getActivity(), list);
         rv.setAdapter(adapter);
         //-------
         setView(db.searchByIdOperai(user_ID));
@@ -149,5 +154,15 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener {
     @Override
     public void saveResult(Boolean result){
         progress.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void newWork(List<Package_item> list, int pos) {
+
+    }
+
+    @Override
+    public void workCompleted(Package_item item) {
+        adapter.addElement(item);
     }
 }

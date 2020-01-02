@@ -9,7 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardCornerRadius="10dp"
-        android:id="@+id/cv" >
+        android:id="@+id/cv"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:focusable="true">
 
         <RelativeLayout
             android:layout_width="match_parent"

@@ -45,6 +45,8 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     private Sensor accelerometer;
     private Sensor magnetometer;
     private Orientation_utility orientation = new Orientation_utility();
+    private Package_item item; //lavoro da completare
+    private WorkListener callback;
     private final int QRCODE = 0;
 
     @Nullable
@@ -69,6 +71,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         }
         else {
             passi = (int)(Math.random() * 10);
+            passi = 0;
         }
         passcount = getString(R.string.passi);
 
@@ -163,6 +166,14 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
             if (resultCode == RESULT_OK) {
                 //String contents = data.getStringExtra("SCAN_RESULT");
                 setScansionaOff();
+                titolo.setText(R.string.pacco);
+                descrizione.setText(R.string.descizione_lunga);
+                callback.workCompleted(item);
+            } else{
+                setScansionaOff();
+                titolo.setText(R.string.pacco);
+                descrizione.setText(R.string.descizione_lunga);
+                callback.workCompleted(item);
             }
         }
     }
@@ -181,12 +192,21 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         }
     }
 
+    public void setonCompledlistener(WorkListener act){
+        callback = act;
+    }
+
     @Override
     public void newWork(List<Package_item> list, int pos) {
-        Package_item item = list.get(pos);
+        item = list.get(pos);
         titolo.setText(item.getTitle());
         descrizione.setText(item.getDescription());
         scansiona.setText(R.string.arrive_per);
+    }
+
+    @Override
+    public void workCompleted(Package_item item) {
+
     }
 
     private void setScansionaOn(){

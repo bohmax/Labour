@@ -26,6 +26,7 @@ public class PackageFragment extends Fragment {
     private List<Package_item> packs;
     private String user_ID = "pippotest";
     private String pathfile;
+    private PackAdapter adapter;
     private SubscribeFragment sf;
     private FragmentManager fm;
 
@@ -75,7 +76,7 @@ public class PackageFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         rv.setLayoutManager(llm);
 
-        PackAdapter adapter = new PackAdapter(getActivity(), packs);
+        adapter = new PackAdapter(getActivity(), packs);
         rv.setAdapter(adapter);
     }
 
@@ -122,5 +123,9 @@ public class PackageFragment extends Fragment {
 
     public List<Package_item> getPacks() {
         return packs;
+    }
+
+    public void removeSelectedItem(int pos){
+        adapter.removeLastItem(pos);
     }
 }

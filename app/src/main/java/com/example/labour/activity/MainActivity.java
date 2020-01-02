@@ -10,15 +10,19 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.Package_item;
 import com.example.labour.fragment.MenuFragment;
 import com.example.labour.fragment.PackageFragment;
 import com.example.labour.fragment.ProfileFragment;
 import com.example.labour.R;
 import com.example.labour.fragment.WorkFragment;
 import com.example.labour.interfacce.CardViewClickListener;
+import com.example.labour.interfacce.WorkListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener {
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener, WorkListener {
 
     private String user_ID="pippotest";
     private boolean exist = true; //togli l'assegnazione
@@ -27,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private WorkFragment workf = new WorkFragment();
     private ProfileFragment proff = new ProfileFragment();
     private Fragment active = packf;
+
+    private int pos_lastSelectedItem; //
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         BottomNavigationView navigation = findViewById(R.id.bottom);
         navigation.setOnNavigationItemSelectedListener(this);
+        workf.setonCompledlistener(this);
 
     }
 
@@ -146,6 +153,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onCardViewClick(int pos) {
+        pos_lastSelectedItem = pos;
         workf.newWork(packf.getPacks(), pos);
+    }
+
+    @Override
+    public void newWork(List<Package_item> list, int pos) {
+
+    }
+
+    @Override
+    public void workCompleted(Package_item item) {
+        proff.workCompleted(item);
+        packf.removeSelectedItem(pos_lastSelectedItem);
     }
 }

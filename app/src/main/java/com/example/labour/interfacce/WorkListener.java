@@ -6,4 +6,6 @@ import java.util.List;
 public interface WorkListener {
 
     void newWork(List<Package_item> list, int pos);
+
+    void workCompleted(Package_item item);
 }
