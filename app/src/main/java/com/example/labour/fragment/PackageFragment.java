@@ -2,6 +2,7 @@ package com.example.labour.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,8 @@ public class PackageFragment extends Fragment {
     private String pathfile;
     private PackAdapter adapter;
     private SubscribeFragment sf;
+    private RecyclerView rv;
+    private Parcelable layout;
     private FragmentManager fm;
 
     @Nullable
@@ -68,16 +71,30 @@ public class PackageFragment extends Fragment {
     //chiamata dopo la on create
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        RecyclerView rv = view.findViewById(R.id.rv);
-        rv.setHasFixedSize(true);
-
-        initializeData();
-
+        rv = view.findViewById(R.id.rv);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-        rv.setLayoutManager(llm);
+        //rv.setHasFixedSize(true);
 
-        adapter = new PackAdapter(getActivity(), packs);
-        rv.setAdapter(adapter);
+        if (savedInstanceState != null) {
+            layout = savedInstanceState.getParcelable("list_state");
+            packs = savedInstanceState.getParcelableArrayList("list_data");
+            if (packs != null){
+                rv.setLayoutManager(llm);
+                //llm.onRestoreInstanceState(layout);
+                adapter = new PackAdapter(getActivity(), packs);
+                rv.setAdapter(adapter);
+            } else setRecyclerView(llm);
+
+        }
+        else setRecyclerView(llm);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (rv.getLayoutManager() != null && layout != null)
+            rv.getLayoutManager().onRestoreInstanceState(layout);
+
     }
 
     @Override
@@ -91,6 +108,10 @@ public class PackageFragment extends Fragment {
         super.onSaveInstanceState(outState);
         if (fm.findFragmentByTag("SubFG TAG1") != null)
             fm.putFragment(outState, "SubscribeFragment", sf);
+        if (rv.getLayoutManager() != null) {
+            outState.putParcelable("list_state", rv.getLayoutManager().onSaveInstanceState());
+            outState.putParcelableArrayList("list_data", adapter.getPacks());
+        }
     }
 
     private void initializeData(){
@@ -127,5 +148,12 @@ public class PackageFragment extends Fragment {
 
     public void removeSelectedItem(int pos){
         adapter.removeLastItem(pos);
+    }
+
+    private void setRecyclerView(RecyclerView.LayoutManager llm){
+        rv.setLayoutManager(llm);
+        initializeData();
+        adapter = new PackAdapter(getActivity(), packs);
+        rv.setAdapter(adapter);
     }
 }

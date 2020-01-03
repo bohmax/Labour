@@ -8,6 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,13 +22,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.MyDatabase;
 import com.example.labour.Package_item;
 import com.example.labour.R;
+import com.example.labour.activity.MainActivity;
 import com.example.labour.interfacce.WorkListener;
 import com.example.labour.utility.Orientation_utility;
 import com.example.labour.utility.Permission_utility;
 import com.google.zxing.integration.android.IntentIntegrator;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
@@ -158,6 +162,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         if (requestCode == QRCODE) {
             if (resultCode == RESULT_OK) {
                 //String contents = data.getStringExtra("SCAN_RESULT");
+
                 setScansionaOff();
                 titolo.setText(R.string.pacco);
                 descrizione.setText(R.string.descizione_lunga);

@@ -1,5 +1,6 @@
 package com.example.labour.activity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -10,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.MyDatabase;
 import com.example.labour.Package_item;
 import com.example.labour.fragment.MenuFragment;
 import com.example.labour.fragment.PackageFragment;
@@ -19,7 +21,9 @@ import com.example.labour.fragment.WorkFragment;
 import com.example.labour.interfacce.CardViewClickListener;
 import com.example.labour.interfacce.WorkListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener, WorkListener {
@@ -166,8 +170,50 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void workCompleted(Package_item item) {
-        proff.workCompleted(item);
-        packf.removeSelectedItem(pos_lastSelectedItem);
-        pos_lastSelectedItem = -1;
+        new SaveWork(this).execute(item);
+    }
+
+    private static class SaveWork extends AsyncTask<Package_item, Void, Long> {
+
+        private WeakReference<MainActivity> activityReference;
+        private Package_item item;
+
+        // only retain a weak reference to the activity
+        SaveWork(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected Long doInBackground(Package_item... items) {
+            item = items[0];
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
+            MyDatabase db = new MyDatabase(activity);
+            return db.createRecordsPacchi(item.getTitle(), item.getDescription(), activity.user_ID);
+        }
+
+        @Override
+        protected void onPostExecute(Long result) {
+
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            if (result != -1) {
+                Snackbar sb = Snackbar.make(activity.findViewById(R.id.frame), "Lavoro completato e salvato", Snackbar.LENGTH_LONG);
+                sb.setAction("Mostra Profilo", v -> {
+                    activity.getSupportFragmentManager().beginTransaction().hide(activity.active).show(activity.proff).commit();
+                    activity.active = activity.proff;
+                }).show();
+
+                activity.proff.workCompleted(item);
+                activity.packf.removeSelectedItem(activity.pos_lastSelectedItem);
+                activity.pos_lastSelectedItem = -1;
+            }
+            else {
+                Snackbar sb = Snackbar.make(activity.findViewById(R.id.frame), "Errore inaspettato, prova a selezionare nuovamente il pacco", Snackbar.LENGTH_LONG);
+                sb.setAction("Nascondi", v -> sb.dismiss()).show();
+            }
+        }
     }
 }

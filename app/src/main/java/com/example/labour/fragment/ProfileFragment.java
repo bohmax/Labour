@@ -90,9 +90,9 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         if (savedInstanceState != null){
             layout = savedInstanceState.getParcelable("list_state");
             ArrayList<Package_item> list_data = savedInstanceState.getParcelableArrayList("list_data");
-            if (list_data != null && layout != null){
+            if (list_data != null){
                 rv.setLayoutManager(llm);
-                llm.onRestoreInstanceState(layout);
+                //llm.onRestoreInstanceState(layout);
                 adapter = new PackAdapter(null, list_data);
                 rv.setAdapter(adapter);
             }
