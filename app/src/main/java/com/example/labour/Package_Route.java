@@ -1,21 +1,39 @@
 package com.example.labour;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.example.labour.utility.Orientation_utility;
+import java.util.ArrayList;
 
-import java.util.LinkedList;
-
-public class Package_Route {
+public class Package_Route implements Parcelable {
 
     /**
      * Se un utente sbaglia strada o sta seguendo un altro pacco devo essere pronto a riservagli
      * lo spazio per potergli permettere di scannerizzare il pacco senza farlo tornare al punto di partenza
      */
-    private LinkedList<Route> routes;
+    private ArrayList<Route> routes;
 
-    public Package_Route() {
-        routes = new LinkedList<>();
+    Package_Route() {
+        routes = new ArrayList<>();
         routes.add(new Route());
     }
+
+    @SuppressWarnings("unchecked")
+    private Package_Route(Parcel in) {
+        routes = in.readArrayList(Route.class.getClassLoader());
+    }
+
+    public static final Creator<Package_Route> CREATOR = new Creator<Package_Route>() {
+        @Override
+        public Package_Route createFromParcel(Parcel in) {
+            return new Package_Route(in);
+        }
+
+        @Override
+        public Package_Route[] newArray(int size) {
+            return new Package_Route[size];
+        }
+    };
 
     /**
      * aggiorna il percorso che l'utente deve seguire, questo metodo va chiamato per ogni passo preso
@@ -23,33 +41,41 @@ public class Package_Route {
      * @param direzione la direzione che l'utente ha preso quando ha eseguito il passo in gradi
      * @return true se bisogna abilitare la scansione, false altrimenti
      */
-    public boolean passo(float direzione){
-        Route route = routes.getLast();
+    void passo(float direzione){
+        Route route = routes.get(routes.size()-1);
         switch (route.passo(direzione)){
             case -1:{ //spazio insufficiente
-                routes.add(new Route(Orientation_utility.getDirection(direzione)));
+                routes.add(new Route(Orientation_utility.getDirection( (direzione + 360 - 180) % 360 )));
                 break;
             }
             case 1:{ //abilita scansione o elimina la testa
-                if (routes.size() == 1)
-                    return true;
-                else routes.removeLast();
+                if (routes.size() != 1)
+                    routes.remove(routes.size()-1);
             }
         }
-        return false;
     }
 
     public int getCurrenteSteps(){
-        Route route = routes.getLast();
+        Route route = routes.get(routes.size()-1);
         return route.passi[route.last_insert];
     }
 
     public Direction getCurrenteDirection(){
-        Route route = routes.getLast();
+        Route route = routes.get(routes.size()-1);
         return route.direction[route.last_insert];
     }
 
-    private class Route {
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeList(routes);
+    }
+
+    private static class Route implements Parcelable {
         /**
          * Indica la strada per raggiumgere una direzione finale, che è rappresentato dal primo elemento
          * dell'array.
@@ -88,6 +114,23 @@ public class Package_Route {
             passi[last_insert] = 1;
         }
 
+        Route(Parcel in) {
+            last_insert = in.readInt();
+            passi = in.createIntArray();
+        }
+
+        public static final Creator<Route> CREATOR = new Creator<Route>() {
+            @Override
+            public Route createFromParcel(Parcel in) {
+                return new Route(in);
+            }
+
+            @Override
+            public Route[] newArray(int size) {
+                return new Route[size];
+            }
+        };
+
         /**
          * decrementa nella posizione corrente di passi se segue la direzione, mentre li aumenta se fa la direzione opposta
          * @param direzione la direzione intrapresa dall'utente
@@ -102,7 +145,7 @@ public class Package_Route {
                     }
                     else {
                         last_insert++;
-                        direction[last_insert] = Orientation_utility.getDirection(direzione);
+                        direction[last_insert] = Orientation_utility.getDirection( (direzione + 360 - 180) % 360 );
                         passi[last_insert]++;
                     }
                     break;
@@ -134,6 +177,17 @@ public class Package_Route {
                 }
             }
             return 0;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(last_insert);
+            dest.writeIntArray(passi);
         }
     }
 }

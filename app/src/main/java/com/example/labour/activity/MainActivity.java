@@ -28,7 +28,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener, WorkListener {
 
-    private String user_ID="pippotest";
+    private String user_ID = "pippotest";
     private boolean new_user = true; //togli l'assegnazione
     private MenuFragment menuf;
     private PackageFragment packf = new PackageFragment();
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             user_ID = extra.getString("ID");
         }
 
-        if (savedInstanceState != null){
+        if (savedInstanceState != null) {
             menuf = (MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
             packf = (PackageFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Package");
             workf = (WorkFragment) getSupportFragmentManager().getFragment(savedInstanceState, "Passi");
@@ -70,8 +70,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     break;
                 }
             }
-        }
-        else {
+        } else {
             menuf = new MenuFragment();
             packf = new PackageFragment();
             workf = new WorkFragment();
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             Bundle bund = new Bundle();
             bund.putString("ID", user_ID);
-            bund.putString("Path_Photo", getApplicationInfo().dataDir+"/files/");
+            bund.putString("Path_Photo", getApplicationInfo().dataDir + "/files/");
             bund.putBoolean("Exist", new_user);
             packf.setArguments(bund);
             proff.setArguments(bund);
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         getSupportFragmentManager().putFragment(outState, "Package", packf);
         getSupportFragmentManager().putFragment(outState, "Passi", workf);
         getSupportFragmentManager().putFragment(outState, "Profilo", proff);
-        if(active instanceof PackageFragment)
+        if (active instanceof PackageFragment)
             outState.putInt("Active", 1);
         else if (active instanceof ProfileFragment)
             outState.putInt("Active", 3);
@@ -121,12 +120,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 active = packf;
                 return true;
             }
-            case R.id.passi:{
+            case R.id.passi: {
                 getSupportFragmentManager().beginTransaction().hide(active).show(workf).commit();
                 active = workf;
                 return true;
             }
-            case R.id.profilo:{
+            case R.id.profilo: {
                 getSupportFragmentManager().beginTransaction().hide(active).show(proff).commit();
                 active = proff;
                 return true;
@@ -136,24 +135,24 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
-        if(active instanceof PackageFragment) //avrei anche potuto fare in modo che implementino un interfaccio, ma ho preferito questo approccio
+        if (active instanceof PackageFragment) //avrei anche potuto fare in modo che implementino un interfaccio, ma ho preferito questo approccio
             packf.showPopup(v);
         else if (active instanceof ProfileFragment)
             proff.showPopup(v);
     }
 
     public void onImageClick(View v) {
-        if(active instanceof PackageFragment)
+        if (active instanceof PackageFragment)
             packf.onImageClick();
         else if (active instanceof ProfileFragment)
             proff.onImageClick();
     }
 
-    public void onEditClick(View v){
+    public void onEditClick(View v) {
         proff.onEditClick();
     }
 
-    public void Update_profile(){
+    public void Update_profile() {
         proff.Dismiss();
     }
 
@@ -169,8 +168,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     @Override
+    public void updateAfterStep(float coordinata) {
+        packf.updateAfterStep(coordinata);
+    }
+
+    @Override
     public void workCompleted(Package_item item) {
         new SaveWork(this).execute(item);
+    }
+
+    public void setOnWorkFragment(){
+
     }
 
     private static class SaveWork extends AsyncTask<Package_item, Void, Long> {
@@ -209,8 +217,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 activity.proff.workCompleted(item);
                 activity.packf.removeSelectedItem(activity.pos_lastSelectedItem);
                 activity.pos_lastSelectedItem = -1;
-            }
-            else {
+            } else {
                 Snackbar sb = Snackbar.make(activity.findViewById(R.id.frame), "Errore inaspettato, prova a selezionare nuovamente il pacco", Snackbar.LENGTH_LONG);
                 sb.setAction("Nascondi", v -> sb.dismiss()).show();
             }

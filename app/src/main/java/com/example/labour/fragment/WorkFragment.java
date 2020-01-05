@@ -52,9 +52,10 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
     private float[] mGravity = new float[3]; //per gestione accelerometro e magnetometro
     private float[] mGeomagnetic = new float[3];
+    private float media;
     private static int lastSaveSteps;
     private static long lastSaveTime;
-    private final static int OFFSET_BETWEEN_STEPS = 1000;
+    private final static int steps_offset = 1000;
 
     @Nullable
     @Override
@@ -66,17 +67,8 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*Bundle extra = getIntent().getExtras();
-        if(extra != null) {
-            exist = extra.getBoolean("Exist");
-            user_ID = extra.getString("ID");
-
-        }*/
-
-        if(savedInstanceState!=null){
-            //passi = savedInstanceState.getInt("passi");
+        if (savedInstanceState != null)
             item = savedInstanceState.getParcelable("pack");
-        }
 
         sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         if (sm != null) {
@@ -94,13 +86,16 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         direzione = view.findViewById(R.id.direzione);
         titolo = view.findViewById(R.id.titolo);
         descrizione = view.findViewById(R.id.descr);
-        //image = view.findViewById(R.id.image);
         scansiona = view.findViewById(R.id.scansiona);
 
-        if (item != null){
+        if (item != null) {
             titolo.setText(item.getTitle());
             descrizione.setText(item.getDescription());
+            route = item.getRoute();
+            String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+            count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
         }
+
         scansiona.setOnClickListener(this);
         setScansionaOff();
     }
@@ -124,12 +119,16 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onSensorChanged(SensorEvent event) {
         //viene generato un evento per ogni passo
-        switch (event.sensor.getType()){
-            case Sensor.TYPE_STEP_DETECTOR:{
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_STEP_DETECTOR: {
                 if (event.values[0] > Integer.MAX_VALUE) //valore da scartare probabilmente
                     return;
-                updateIfNecessary((int)event.values[0]);
-                break;
+                int timestamp = (int) event.values[0];
+                if (timestamp > lastSaveSteps + steps_offset ||
+                        (timestamp > 0 && System.currentTimeMillis() > lastSaveTime + steps_offset)) { //prendi il passo
+                    aggiornaPassi(timestamp);
+                }
+                return;
             }
             case Sensor.TYPE_ACCELEROMETER:
                 Orientation_utility.remove_gravity(mGravity, event.values);
@@ -138,7 +137,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 Orientation_utility.remove_gravity(mGeomagnetic, event.values);
                 break;
         }
-        float media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
+        media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
         coordinata.setText(String.valueOf(Math.round(media)));
         Direction dir = Orientation_utility.getDirection(media);
         String coordinata = dir.toString().replace("_", " ");
@@ -152,7 +151,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
     @Override
     public void onClick(View v) {
-        if (v == scansiona){
+        if (v == scansiona) {
             if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA}, Permission_utility.FOTO_PERMISSION, "Hai bisogno di utilizzare la camera per finire con il pacco"))
                 startActivityForResult(IntentIntegrator.forSupportFragment(this).setOrientationLocked(false).createScanIntent(), QRCODE);
         }
@@ -169,7 +168,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 callback.workCompleted(item);
                 item = null;
                 route = null;
-            } else{
+            } else {
                 MainActivity main = (MainActivity) context;
                 Snackbar.make(main.findViewById(R.id.frame), "Scansione fallita, riprovare", Snackbar.LENGTH_LONG).show();
             }
@@ -179,7 +178,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == Permission_utility.FOTO_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 //fai partire l'intent
                 startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
             } else {
@@ -200,11 +199,10 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        //outState.putInt("passi", passi);
         outState.putParcelable("pack", item);
     }
 
-    public void setonCompledlistener(WorkListener act){
+    public void setonCompledlistener(WorkListener act) {
         callback = act;
     }
 
@@ -214,9 +212,14 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         titolo.setText(item.getTitle());
         descrizione.setText(item.getDescription());
         scansiona.setText(R.string.arrive_per);
-        route = new Package_Route();
+        route = item.getRoute();
         String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
         count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
+    }
+
+    @Override
+    public void updateAfterStep(float coordinata) {
+
     }
 
     @Override
@@ -224,37 +227,33 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
     }
 
-    private void setScansionaOn(){
+    private void setScansionaOn() {
         scansiona.setText(getString(R.string.scansionamento));
         scansiona.setAlpha(1);
         scansiona.setClickable(true);
     }
 
-    private void setScansionaOff(){
+    private void setScansionaOff() {
         scansiona.setText(getString(R.string.seleziona_pacco));
         scansiona.setAlpha((float) 0.5);
         scansiona.setClickable(false);
     }
 
-    private void updateIfNecessary(int timestamp) {
-        if (timestamp > lastSaveSteps + OFFSET_BETWEEN_STEPS ||
-                (timestamp > 0 && System.currentTimeMillis() > lastSaveTime + OFFSET_BETWEEN_STEPS)) { //prendi il passo
-            if (route != null) {
-                float media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
-                if (route.passo(media)) { //abilita scansione
-                    setScansionaOn();
-                    count.setText("");
-                } else if (scansiona.isClickable()) {
+    private void aggiornaPassi(int timestamp) {
+        if (route != null) {
+            if (callback != null)
+                callback.updateAfterStep(media);
+            if (route.getCurrenteSteps() == 0) { //abilita scansione, sei arrivato al pacco
+                setScansionaOn();
+                count.setText("");
+            } else {
+                if (scansiona.isClickable())
                     setScansionaOff();
-                    String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
-                    count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
-                } else {
-                    String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
-                    count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
-                }
-                lastSaveSteps = timestamp;
-                lastSaveTime = System.currentTimeMillis();
+                String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+                count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
             }
+            lastSaveSteps = timestamp;
+            lastSaveTime = System.currentTimeMillis();
         }
     }
 

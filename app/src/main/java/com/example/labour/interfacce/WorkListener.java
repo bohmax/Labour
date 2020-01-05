@@ -7,5 +7,7 @@ public interface WorkListener {
 
     void newWork(List<Package_item> list, int pos);
 
+    void updateAfterStep(float coordinata);
+
     void workCompleted(Package_item item);
 }

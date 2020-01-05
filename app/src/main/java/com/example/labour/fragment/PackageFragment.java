@@ -17,11 +17,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.labour.PackAdapter;
 import com.example.labour.Package_item;
 import com.example.labour.R;
+import com.example.labour.interfacce.WorkListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PackageFragment extends Fragment {
+public class PackageFragment extends Fragment implements WorkListener {
 
     private boolean exist = false;
     private ArrayList<Package_item> packs;
@@ -116,6 +117,7 @@ public class PackageFragment extends Fragment {
 
     private void initializeData(){
         packs = new ArrayList<>();
+        //gli elementi devono essere sempre <= 10 ma
         packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
         packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
         packs.add(new Package_item("Cristina", "Cabras", R.drawable.package_default));
@@ -126,11 +128,6 @@ public class PackageFragment extends Fragment {
         packs.add(new Package_item("Swag", "Prova", R.drawable.package_default));
         packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
         packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
-        packs.add(new Package_item("Cristina", "Cabras", R.drawable.package_default));
-        packs.add(new Package_item("Swag", "Prova", R.drawable.package_default));
-        packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
-        packs.add(new Package_item("Cristina", "Cabras", R.drawable.package_default));
         packs.add(new Package_item("Mente", "MUHAHAHHA", R.drawable.package_default));
     }
 
@@ -155,5 +152,20 @@ public class PackageFragment extends Fragment {
         initializeData();
         adapter = new PackAdapter(getActivity(), packs);
         rv.setAdapter(adapter);
+    }
+
+    @Override
+    public void newWork(List<Package_item> list, int pos) {
+
+    }
+
+    @Override
+    public void updateAfterStep(float coordinate) {
+        adapter.updatePassi(coordinate);
+    }
+
+    @Override
+    public void workCompleted(Package_item item) {
+
     }
 }

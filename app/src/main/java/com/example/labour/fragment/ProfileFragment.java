@@ -188,6 +188,11 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     }
 
     @Override
+    public void updateAfterStep(float coordinata) {
+
+    }
+
+    @Override
     public void workCompleted(Package_item item) {
         adapter.addElement(item);
     }
