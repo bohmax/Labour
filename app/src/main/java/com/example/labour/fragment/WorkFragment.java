@@ -8,13 +8,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,36 +20,41 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.labour.MyDatabase;
+import com.example.labour.Direction;
+import com.example.labour.Package_Route;
 import com.example.labour.Package_item;
 import com.example.labour.R;
 import com.example.labour.activity.MainActivity;
 import com.example.labour.interfacce.WorkListener;
 import com.example.labour.utility.Orientation_utility;
 import com.example.labour.utility.Permission_utility;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.zxing.integration.android.IntentIntegrator;
 
-import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 
 public class WorkFragment extends Fragment implements SensorEventListener, WorkListener, View.OnClickListener {
 
-    private String passcount;
-    private int passi;
     private Context context;
     private TextView titolo, descrizione, count, coordinata, direzione;
-    private ImageView image;
     private Button scansiona;
     private SensorManager sm;
     private Sensor steps;
     private Sensor accelerometer;
     private Sensor magnetometer;
-    private Orientation_utility orientation = new Orientation_utility();
     private Package_item item; //lavoro da completare
+    private Package_Route route;
     private WorkListener callback;
     private final int QRCODE = 0;
+
+    private float[] mGravity = new float[3]; //per gestione accelerometro e magnetometro
+    private float[] mGeomagnetic = new float[3];
+    private static int lastSaveSteps;
+    private static long lastSaveTime;
+    private final static int OFFSET_BETWEEN_STEPS = 1000;
 
     @Nullable
     @Override
@@ -71,19 +74,16 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         }*/
 
         if(savedInstanceState!=null){
-            passi = savedInstanceState.getInt("passi");
+            //passi = savedInstanceState.getInt("passi");
             item = savedInstanceState.getParcelable("pack");
         }
-        else {
-            passi = (int)(Math.random() * 10);
-            passi = 0;
-        }
-        passcount = getString(R.string.passi);
 
         sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        steps = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-        accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        if (sm != null) {
+            steps = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+            accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
 
     }
 
@@ -94,16 +94,15 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         direzione = view.findViewById(R.id.direzione);
         titolo = view.findViewById(R.id.titolo);
         descrizione = view.findViewById(R.id.descr);
-        image = view.findViewById(R.id.image);
+        //image = view.findViewById(R.id.image);
         scansiona = view.findViewById(R.id.scansiona);
-        count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
 
         if (item != null){
             titolo.setText(item.getTitle());
             descrizione.setText(item.getDescription());
         }
         scansiona.setOnClickListener(this);
-        setScansionaOn();
+        setScansionaOff();
     }
 
     @Override
@@ -115,9 +114,11 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onResume() {
         super.onResume();
-        sm.registerListener(this, steps, SensorManager.SENSOR_DELAY_UI);
-        sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
-        sm.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
+        if (steps != null && accelerometer != null && magnetometer != null) {
+            sm.registerListener(this, steps, SensorManager.SENSOR_DELAY_UI);
+            sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+            sm.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
+        }
     }
 
     @Override
@@ -125,22 +126,23 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         //viene generato un evento per ogni passo
         switch (event.sensor.getType()){
             case Sensor.TYPE_STEP_DETECTOR:{
-                if (passi != 0)
-                    passi -= 1;
-                else setScansionaOn();
-                count.setText(String.format("%s%s", passcount, String.valueOf(passi)));
-                return;
+                if (event.values[0] > Integer.MAX_VALUE) //valore da scartare probabilmente
+                    return;
+                updateIfNecessary((int)event.values[0]);
+                break;
             }
             case Sensor.TYPE_ACCELEROMETER:
-                orientation.setmGravity(event.values);
+                Orientation_utility.remove_gravity(mGravity, event.values);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                orientation.setmGeomagnetic(event.values);
+                Orientation_utility.remove_gravity(mGeomagnetic, event.values);
                 break;
         }
-        float media = orientation.getRotatioMedia();
+        float media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
         coordinata.setText(String.valueOf(Math.round(media)));
-        direzione.setText(orientation.getDirection(media));
+        Direction dir = Orientation_utility.getDirection(media);
+        String coordinata = dir.toString().replace("_", " ");
+        direzione.setText(MessageFormat.format("Stai puntanto a {0}", coordinata));
     }
 
     @Override
@@ -152,7 +154,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     public void onClick(View v) {
         if (v == scansiona){
             if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA}, Permission_utility.FOTO_PERMISSION, "Hai bisogno di utilizzare la camera per finire con il pacco"))
-                startActivityForResult(IntentIntegrator.forSupportFragment(this).createScanIntent(), QRCODE);
+                startActivityForResult(IntentIntegrator.forSupportFragment(this).setOrientationLocked(false).createScanIntent(), QRCODE);
         }
     }
 
@@ -161,19 +163,15 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == QRCODE) {
             if (resultCode == RESULT_OK) {
-                //String contents = data.getStringExtra("SCAN_RESULT");
-
                 setScansionaOff();
                 titolo.setText(R.string.pacco);
                 descrizione.setText(R.string.descizione_lunga);
                 callback.workCompleted(item);
                 item = null;
+                route = null;
             } else{
-                setScansionaOff();
-                titolo.setText(R.string.pacco);
-                descrizione.setText(R.string.descizione_lunga);
-                callback.workCompleted(item);
-                item = null;
+                MainActivity main = (MainActivity) context;
+                Snackbar.make(main.findViewById(R.id.frame), "Scansione fallita, riprovare", Snackbar.LENGTH_LONG).show();
             }
         }
     }
@@ -195,13 +193,14 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     @Override
     public void onPause() {
         super.onPause();
-        sm.unregisterListener(this);
+        if (sm != null)
+            sm.unregisterListener(this);
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("passi", passi);
+        //outState.putInt("passi", passi);
         outState.putParcelable("pack", item);
     }
 
@@ -215,6 +214,9 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         titolo.setText(item.getTitle());
         descrizione.setText(item.getDescription());
         scansiona.setText(R.string.arrive_per);
+        route = new Package_Route();
+        String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+        count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
     }
 
     @Override
@@ -232,6 +234,28 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         scansiona.setText(getString(R.string.seleziona_pacco));
         scansiona.setAlpha((float) 0.5);
         scansiona.setClickable(false);
+    }
+
+    private void updateIfNecessary(int timestamp) {
+        if (timestamp > lastSaveSteps + OFFSET_BETWEEN_STEPS ||
+                (timestamp > 0 && System.currentTimeMillis() > lastSaveTime + OFFSET_BETWEEN_STEPS)) { //prendi il passo
+            if (route != null) {
+                float media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
+                if (route.passo(media)) { //abilita scansione
+                    setScansionaOn();
+                    count.setText("");
+                } else if (scansiona.isClickable()) {
+                    setScansionaOff();
+                    String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+                    count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
+                } else {
+                    String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+                    count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
+                }
+                lastSaveSteps = timestamp;
+                lastSaveTime = System.currentTimeMillis();
+            }
+        }
     }
 
 }
