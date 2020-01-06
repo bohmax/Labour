@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -16,14 +17,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import com.example.labour.async.ServerRequest;
 import com.example.labour.interfacce.TaskListener;
 import com.example.labour.fragment.MenuFragment;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
-import com.example.labour.getID_NFC;
+import com.example.labour.utility.getID_NFC;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.lang.ref.WeakReference;
 
 public class LoginActivity extends AppCompatActivity implements TaskListener {
 
@@ -33,7 +35,6 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     private MenuFragment menuf;
     private ProgressBar progress;
     private Snackbar sb;
-    private MyDatabase mydb;
     EditText test;
 
     boolean serverrequest = false; //per sapere se l'utente vuole interagire con il server
@@ -70,7 +71,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
                 startActivity(intent);
             });
         }
-        mydb = new MyDatabase(this);
+
     }
 
     @Override
@@ -135,13 +136,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     }
 
     private void tryInsertDB(String id){
-        Intent i = new Intent(this, MainActivity.class);
-        if(mydb.createRecordsOperai(id, "Mario", "Rossi", "Uomo", 22) != -1)
-            i.putExtra("Exist", false);
-        else
-            i.putExtra("Exist", true);
-        i.putExtra("ID", id);
-        startActivity(i);
+        new RequestUser(this).execute(id);
     }
 
     private void richiediAccesso(String id){
@@ -185,5 +180,40 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             tryInsertDB(id);
         else
             Toast.makeText(this, "Impossibile contattare il server, riprovare.", Toast.LENGTH_LONG).show();
+    }
+
+    private static class RequestUser extends AsyncTask<String, Void, Long> {
+
+        private WeakReference<LoginActivity> activityReference;
+        private String id;
+
+        RequestUser(LoginActivity act) {
+            activityReference = new WeakReference<>(act);
+        }
+
+        @Override
+        protected Long doInBackground(String... ids) {
+            id = ids[0];
+            LoginActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
+            MyDatabase db = new MyDatabase(activity);
+            return db.createRecordsOperai(id, "Mario", "Rossi", "Uomo", 22);
+        }
+
+        @Override
+        protected void onPostExecute(Long result) {
+
+            LoginActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            Intent i = new Intent(activity, MainActivity.class);
+            if(result != -1)
+                i.putExtra("Exist", false);
+            else
+                i.putExtra("Exist", true);
+            i.putExtra("ID", id);
+            activity.startActivity(i);
+        }
     }
 }

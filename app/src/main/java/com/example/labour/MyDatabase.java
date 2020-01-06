@@ -88,6 +88,20 @@ public class MyDatabase {
         return list;
     }
 
+    public ArrayList<Package_item> searchByIdPacchi(String id, int range, int offset) {
+        Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " +
+                OP_EXT + "=?" + " LIMIT " + range + " OFFSET " + offset , new String[]{id});
+        ArrayList<Package_item> list= new ArrayList<>();
+        while (cur.moveToNext()) {
+            list.add( new Package_item(
+                    cur.getString(cur.getColumnIndex(OP_TITOLO)),
+                    cur.getString(cur.getColumnIndex(OP_DESCR)),
+                    R.drawable.package_default));
+        }
+        cur.close();
+        return list;
+    }
+
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){
         boolean ris = false;
         String whereclause;

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -31,7 +32,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
-
 import com.example.labour.activity.MainActivity;
 import com.example.labour.async.PhotoLoader;
 import com.example.labour.async.RenameFile;
@@ -57,7 +57,6 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     private static final int FOTO_REQUEST = 0;
     private Context mContext;
     private String ID;
-    private MyDatabase mydb;
     private Button button, accept, disable;
     private TextInputEditText nome,cognome, age;
     private CircularImageView civ;
@@ -106,7 +105,6 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
         else if (pic != null && pic.exists())
             new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
-        mydb = new MyDatabase(getContext());
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
         builder.setIcon(R.drawable.ic_account_circle_black_24dp);
@@ -128,7 +126,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             else sesso = button.getText().toString();
             if(Objects.requireNonNull(age.getText()).toString().length()!=0)
                 eta =age.getText().toString();
-            mydb.updateRecordsOperai(ID, Objects.requireNonNull(nome.getText()).toString(), Objects.requireNonNull(cognome.getText()).toString(),sesso, Integer.parseInt(eta));
+            new UpdateUser((MainActivity) mContext).execute(ID, Objects.requireNonNull(nome.getText()).toString(), Objects.requireNonNull(cognome.getText()).toString(),sesso, eta);
 
             button_pressed = true;
 
@@ -299,5 +297,24 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
         if (result && mnewTempPath != null) //se android restarta l'app e quindi mnewTemp sarebbe null.
             mCurrentPhotoPath = mnewTempPath;
         mnewTempPath = null;
+    }
+
+    private static class UpdateUser extends AsyncTask<String, Void, Void> {
+
+        private WeakReference<MainActivity> activityReference;
+
+        UpdateUser(MainActivity act) {
+            activityReference = new WeakReference<>(act);
+        }
+
+        @Override
+        protected Void doInBackground(String... elements) {
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
+            MyDatabase db = new MyDatabase(activity);
+            db.updateRecordsOperai(elements[0], elements[1], elements[2], elements[3], Integer.parseInt(elements[4]));
+            return null;
+        }
     }
 }

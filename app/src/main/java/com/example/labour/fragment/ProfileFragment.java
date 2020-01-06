@@ -2,6 +2,7 @@ package com.example.labour.fragment;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -16,9 +17,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.labour.PackAdapter;
 import com.example.labour.Package_item;
+import com.example.labour.activity.MainActivity;
 import com.example.labour.async.PhotoLoader;
 import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
@@ -46,7 +47,6 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     private PackAdapter adapter;
     private RecyclerView rv;
     private Parcelable layout;
-    private MyDatabase db;
 
     @Nullable
     @Override
@@ -74,7 +74,6 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        db = new MyDatabase(getContext());
         //parte profilo
         nome = view.findViewById(R.id.nome);
         carratteristiche = view.findViewById(R.id.caratteristiche);
@@ -102,7 +101,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             setRecyclerView(llm);
         }
         //-------
-        setView(db.searchByIdOperai(user_ID));
+        new updateUser((MainActivity) context, this).execute(user_ID);
     }
 
     @Override
@@ -115,8 +114,8 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     @Override
     public void onResume() {
         super.onResume();
-        if (rv.getLayoutManager() != null && layout != null)
-            rv.getLayoutManager().onRestoreInstanceState(layout);
+        //if (rv.getLayoutManager() != null && layout != null)
+        //    rv.getLayoutManager().onRestoreInstanceState(layout);
 
     }
 
@@ -134,22 +133,24 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
     //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
     public void Dismiss() {
-        setView(db.searchByIdOperai(user_ID));
+        new updateUser((MainActivity) context, this).execute(user_ID);
     }
 
     public void onEditClick(){
         if(sf==null)
             sf = new SubscribeFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString("ID", user_ID);
-        bundle.putString("nome", userInfo[0]);
-        bundle.putString("cognome", userInfo[1]);
-        bundle.putString("anni", userInfo[2]);
-        bundle.putString("sesso", userInfo[3]);
-        bundle.putString("Path_Folder", pathfolder);
-        sf.setArguments(bundle);
-        sf.setCancelable(false);
-        sf.show(fm, "SubFG TAG");
+        if (userInfo != null) {
+            Bundle bundle = new Bundle();
+            bundle.putString("ID", user_ID);
+            bundle.putString("nome", userInfo[0]);
+            bundle.putString("cognome", userInfo[1]);
+            bundle.putString("anni", userInfo[2]);
+            bundle.putString("sesso", userInfo[3]);
+            bundle.putString("Path_Folder", pathfolder);
+            sf.setArguments(bundle);
+            sf.setCancelable(false);
+            sf.show(fm, "SubFG TAG");
+        }
     }
 
     @Override
@@ -157,7 +158,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         super.onSaveInstanceState(outState);
         if (fm.findFragmentByTag("SubFG TAG") != null)
             fm.putFragment(outState, "SubscribeFragment", sf);
-        if (rv.getLayoutManager() != null) {
+        if (rv.getLayoutManager() != null && adapter != null) {
             outState.putParcelable("list_state", rv.getLayoutManager().onSaveInstanceState());
             outState.putParcelableArrayList("list_data", adapter.getPacks());
         }
@@ -199,8 +200,87 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
     private void setRecyclerView(RecyclerView.LayoutManager llm){
         rv.setLayoutManager(llm);
-        ArrayList<Package_item> list = db.searchByIdPacchi(user_ID);
+        ArrayList<Package_item> list = new ArrayList<>();
         adapter = new PackAdapter(null, list);
-        rv.setAdapter(adapter);
+        new RequestCompletedPack((MainActivity) context, this).execute(user_ID);
+    }
+
+    private static class RequestCompletedPack extends AsyncTask<String, ArrayList<Package_item>, Void> {
+
+        private WeakReference<MainActivity> activityReference;
+        private WeakReference<ProfileFragment> profReference;
+
+        RequestCompletedPack(MainActivity act, ProfileFragment prof) {
+            activityReference = new WeakReference<>(act);
+            profReference = new WeakReference<>(prof);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected Void doInBackground(String... ids) {
+            String id = ids[0];
+            int range = 5;
+            int offset = 0;
+            ArrayList<Package_item> list;
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+
+            MyDatabase db = new MyDatabase(activity);
+            while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 100) {
+                offset = range;
+                range += offset;
+                publishProgress(list);
+            }
+            return null;
+        }
+
+        @SafeVarargs
+        @Override
+        protected final void onProgressUpdate(ArrayList<Package_item>... values) {
+            super.onProgressUpdate(values);
+            ProfileFragment prof = profReference.get();
+            if (prof == null || prof.isDetached()) return;
+            for (Package_item item: values[0]) {
+                prof.adapter.addElement(item);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            ProfileFragment prof = profReference.get();
+            if (prof == null || prof.isDetached()) return;
+            prof.rv.setAdapter(prof.adapter);
+        }
+    }
+
+    private static class updateUser extends AsyncTask<String, Void, String[]> {
+
+        private WeakReference<MainActivity> activityReference;
+        private WeakReference<ProfileFragment> profReference;
+
+        updateUser(MainActivity act, ProfileFragment prof) {
+            activityReference = new WeakReference<>(act);
+            profReference = new WeakReference<>(prof);
+        }
+
+        @Override
+        protected String[] doInBackground(String... ids) {
+            String id = ids[0];
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return null;
+            ProfileFragment prof = profReference.get();
+            if (prof == null || prof.isDetached()) return null;
+
+            MyDatabase db = new MyDatabase(activity);
+            return db.searchByIdOperai(id);
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            ProfileFragment prof = profReference.get();
+            if (prof == null || prof.isDetached()) return;
+            prof.setView(result);
+        }
     }
 }

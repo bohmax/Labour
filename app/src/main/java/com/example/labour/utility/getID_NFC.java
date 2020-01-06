@@ -1,4 +1,4 @@
-package com.example.labour;
+package com.example.labour.utility;
 
 import android.content.Intent;
 import android.nfc.NdefMessage;

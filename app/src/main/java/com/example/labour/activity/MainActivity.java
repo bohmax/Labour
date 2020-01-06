@@ -177,10 +177,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         new SaveWork(this).execute(item);
     }
 
-    public void setOnWorkFragment(){
-
-    }
-
     private static class SaveWork extends AsyncTask<Package_item, Void, Long> {
 
         private WeakReference<MainActivity> activityReference;
