@@ -29,12 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.LoginActivity"/>
-        <activity android:name=".activity.PreferenceActivity" >
-            <intent-filter>
-                <action android:name="android.settings.APPLICATION_DETAILS_SETTINGS"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
+        <activity android:name=".activity.PreferenceActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

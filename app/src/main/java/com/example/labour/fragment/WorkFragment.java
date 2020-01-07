@@ -1,6 +1,7 @@
 package com.example.labour.fragment;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,6 +10,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +50,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     private Package_item item; //lavoro da completare
     private Package_Route route;
     private WorkListener callback;
+    private AlertDialog calibrazione; //allerta che indica all'utente che deve calibrare il dispositivo
     private final int QRCODE = 0;
 
     private float[] mGravity = new float[3]; //per gestione accelerometro e magnetometro
@@ -56,6 +59,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     private static int lastSaveSteps;
     private static long lastSaveTime;
     private final static int steps_offset = 1000;
+    private boolean disabilitati; //se il sensore diventa impreciso disabilito per evitare eventi non desiserati
 
     @Nullable
     @Override
@@ -96,6 +100,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
             count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
         }
 
+        calibrazione = getCalibrazione();
         scansiona.setOnClickListener(this);
         setScansionaOff();
     }
@@ -135,6 +140,22 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 Orientation_utility.remove_gravity(mGeomagnetic, event.values);
+                float campo = Orientation_utility.forzaMAgnetica(mGeomagnetic);
+                if (campo > 75 && !disabilitati){
+                    Log.e("intensità campo", String.valueOf(campo));
+                    calibrazione.show();
+                    sm.unregisterListener(this, steps);
+                    sm.unregisterListener(this, accelerometer);
+                    disabilitati = true;
+                    return;
+                }
+                else if (campo < 50 && disabilitati){
+                    sm.registerListener(this, steps, SensorManager.SENSOR_DELAY_UI);
+                    sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+                    calibrazione.dismiss();
+                    disabilitati = false;
+                }
+
                 break;
         }
         media = Orientation_utility.getRotatioMedia(mGravity, mGeomagnetic);
@@ -145,9 +166,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
     @Override
     public void onClick(View v) {
@@ -257,4 +276,9 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         }
     }
 
+    private AlertDialog getCalibrazione() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(R.layout.image_layout);
+        return builder.setCancelable(false).create();
+    }
 }

@@ -206,8 +206,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             if (result != -1) {
                 Snackbar sb = Snackbar.make(activity.findViewById(R.id.frame), "Lavoro completato e salvato", Snackbar.LENGTH_LONG);
                 sb.setAction("Mostra Profilo", v -> {
-                    activity.getSupportFragmentManager().beginTransaction().hide(activity.active).show(activity.proff).commit();
-                    activity.active = activity.proff;
+                    ((BottomNavigationView) (activity.findViewById(R.id.bottom))).setSelectedItemId(R.id.profilo);
                 }).show();
 
                 activity.proff.workCompleted(item);

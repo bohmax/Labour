@@ -1,18 +1,15 @@
 package com.example.labour.utility;
 
 import android.hardware.SensorManager;
-
 import com.example.labour.Direction;
-
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 public class Orientation_utility {
 
     private static float[] R = new float[9];
     private static float[] I = new float[9];
     private static float[] orientation = new float[3];
-    private static final int bufsize = 30; //dimensione della coda
-    private static CircularFifoQueue<Float> buf = new CircularFifoQueue<>(bufsize); //cerco una media per l'azimuth in modo da non avere un risultato ballerino
+    private static final int bufsize = 10; //dimensione della coda
+    private static float[] buf = new float[bufsize]; //cerco una media per l'azimuth in modo da non avere un risultato ballerino
     private static float somma = 0;//per avitae di sommare ogni volta tutti gli elementi dell array
     private static int last_inserted = 0; //indice dell'elemento da rimuovere dalla coda
     private static final float alpha = 0.8f;
@@ -27,20 +24,18 @@ public class Orientation_utility {
         if (mGravity != null && mGeomagnetic != null) {
             boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
             if (success) {
+                SensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, //se lo schermo ruota risistema le coordinate
+                        SensorManager.AXIS_Z, I);
                 SensorManager.getOrientation(R, orientation);
                 float azimuth = orientation[0]; // orientation contains: azimut, pitch and roll, azimut è in radianti
-                float azimutdegree = (float) (Math.toDegrees(azimuth) + 360) % 360;
-                if (buf.size()==bufsize) { //se la coda è piena rimuovi il primo elemento da somma e aggiungi il nuovo elemento
-                    float value = buf.get(last_inserted);
-                    somma -= value;
-                    somma += azimutdegree;
-                    buf.add(azimutdegree);
-                    last_inserted = (last_inserted+1)%bufsize;
-                    return somma /(float) buf.size();
-                } else{
-                    somma += azimutdegree;
-                    buf.add(azimutdegree);
-                }
+                //mi occupo del buffer
+                float value = buf[last_inserted];
+                somma -= value;
+                somma += azimuth;
+                buf[last_inserted] = azimuth;
+                last_inserted = (last_inserted+1)%bufsize;
+                float media = somma/buf.length;
+                return  ((float) (Math.toDegrees(media) + 360)) % 360;
             }
         } return 0;
     }
@@ -93,5 +88,10 @@ public class Orientation_utility {
         int dir2opp = (int) (dir2 + 360 - 180) % 360;
         if (dir1value == dir2opp) return 2;
         return 0;
+    }
+
+    public static float forzaMAgnetica(float[] mGeomagnetic){
+        return (float) Math.sqrt(mGeomagnetic[0] * mGeomagnetic[0] +
+                mGeomagnetic[1] * mGeomagnetic[1] + mGeomagnetic[2] * mGeomagnetic[2]);
     }
 }
