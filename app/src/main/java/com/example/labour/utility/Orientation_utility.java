@@ -9,7 +9,7 @@ public class Orientation_utility {
     private static float[] I = new float[9];
     private static float[] orientation = new float[3];
     private static final int bufsize = 15; //dimensione della coda
-    private static float[] circularfifobuf = new float[bufsize]; //usato per avere una media dell'azimuth in modo da non avere un risultato ballerino
+    private static float[] buf = new float[bufsize]; //usato per avere una media dell'azimuth in modo da non avere un risultato ballerino
     private static float somma = 0;//per avitae di sommare ogni volta tutti gli elementi dell array
     private static int last_inserted = 0; //indice dell'elemento da rimuovere dalla coda
     private static final float alpha = 0.8f;
@@ -29,12 +29,12 @@ public class Orientation_utility {
                 SensorManager.getOrientation(R, orientation);
                 float azimuth = orientation[0]; // orientation contains: azimut, pitch and roll, azimut è in radianti
                 //mi occupo del buffer
-                float value = circularfifobuf[last_inserted];
+                float value = buf[last_inserted];
                 somma -= value;
                 somma += azimuth;
-                circularfifobuf[last_inserted] = azimuth;
-                last_inserted = (last_inserted+1)%bufsize;
-                float media = somma/circularfifobuf.length;
+                buf[last_inserted] = azimuth;
+                last_inserted = (last_inserted+1)%bufsize; //in questo modo buf è trattato come un array circolare
+                float media = somma/buf.length;
                 return  ((float) (Math.toDegrees(media) + 360)) % 360;
             }
         } return 0;

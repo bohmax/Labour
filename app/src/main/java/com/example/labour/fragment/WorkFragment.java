@@ -102,7 +102,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
 
         calibrazione = getCalibrazione();
         scansiona.setOnClickListener(this);
-        setScansionaOff();
+        setScansionaOn();
     }
 
     @Override

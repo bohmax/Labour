@@ -4,9 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
 import java.util.ArrayList;
-import java.util.List;
 
 public class MyDatabase {
 
@@ -75,19 +73,6 @@ public class MyDatabase {
         return elem;
     }
 
-    public ArrayList<Package_item> searchByIdPacchi(String id) {
-        Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " + OP_EXT + "=?", new String[]{id});
-        ArrayList<Package_item> list= new ArrayList<>();
-        while (cur.moveToNext()) {
-            list.add( new Package_item(
-                    cur.getString(cur.getColumnIndex(OP_TITOLO)),
-                    cur.getString(cur.getColumnIndex(OP_DESCR)),
-                    R.drawable.package_default));
-        }
-        cur.close();
-        return list;
-    }
-
     public ArrayList<Package_item> searchByIdPacchi(String id, int range, int offset) {
         Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " +
                 OP_EXT + "=?" + " LIMIT " + range + " OFFSET " + offset , new String[]{id});
@@ -101,6 +86,20 @@ public class MyDatabase {
         cur.close();
         return list;
     }
+
+
+    /*public ArrayList<Package_item> searchByIdPacchi(String id) {
+        Cursor cur = database.rawQuery("SELECT * FROM " + OP_PACCHI + " WHERE " + OP_EXT + "=?", new String[]{id});
+        ArrayList<Package_item> list= new ArrayList<>();
+        while (cur.moveToNext()) {
+            list.add( new Package_item(
+                    cur.getString(cur.getColumnIndex(OP_TITOLO)),
+                    cur.getString(cur.getColumnIndex(OP_DESCR)),
+                    R.drawable.package_default));
+        }
+        cur.close();
+        return list;
+    }*/
 
     /*public boolean delete(String key, String elem, SimpleCursorAdapter spc){
         boolean ris = false;

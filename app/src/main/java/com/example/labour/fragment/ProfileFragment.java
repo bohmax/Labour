@@ -100,7 +100,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             setRecyclerView(llm);
         }
         //-------
-        new updateUser((MainActivity) context, this).execute(user_ID);
+        new Thread(new updateUser()).start();
     }
 
     @Override
@@ -132,7 +132,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
     //se il subscribe fragment viene dismesso devo aggiornare la foto, se questa è stata aggiornata
     public void Dismiss() {
-        new updateUser((MainActivity) context, this).execute(user_ID);
+        new Thread(new updateUser()).start();
     }
 
     public void onEditClick(){
@@ -253,33 +253,12 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         }
     }
 
-    private static class updateUser extends AsyncTask<String, Void, String[]> {
-
-        private WeakReference<MainActivity> activityReference;
-        private WeakReference<ProfileFragment> profReference;
-
-        updateUser(MainActivity act, ProfileFragment prof) {
-            activityReference = new WeakReference<>(act);
-            profReference = new WeakReference<>(prof);
-        }
-
+    private class updateUser implements Runnable {
         @Override
-        protected String[] doInBackground(String... ids) {
-            String id = ids[0];
-            MainActivity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) return null;
-            ProfileFragment prof = profReference.get();
-            if (prof == null || prof.isDetached()) return null;
-
-            MyDatabase db = new MyDatabase(activity);
-            return db.searchByIdOperai(id);
-        }
-
-        @Override
-        protected void onPostExecute(String[] result) {
-            ProfileFragment prof = profReference.get();
-            if (prof == null || prof.isDetached()) return;
-            prof.setView(result);
+        public void run() {
+            MyDatabase db = new MyDatabase(getContext());
+            String[] ris = db.searchByIdOperai(user_ID);
+            ((MainActivity)context).runOnUiThread(() -> setView(ris));
         }
     }
 }

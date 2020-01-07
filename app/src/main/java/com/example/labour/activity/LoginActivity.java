@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -24,8 +23,6 @@ import com.example.labour.MyDatabase;
 import com.example.labour.R;
 import com.example.labour.utility.getID_NFC;
 import com.google.android.material.snackbar.Snackbar;
-
-import java.lang.ref.WeakReference;
 
 public class LoginActivity extends AppCompatActivity implements TaskListener {
 
@@ -136,7 +133,17 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     }
 
     private void tryInsertDB(String id){
-        new RequestUser(this).execute(id);
+        new Thread(() -> {
+            MyDatabase db = new MyDatabase(this);
+            long result = db.createRecordsOperai(id, "Mario", "Rossi", "Uomo", 22);
+            Intent i = new Intent(this, MainActivity.class);
+            if(result != -1)
+                i.putExtra("Exist", false);
+            else
+                i.putExtra("Exist", true);
+            i.putExtra("ID", id);
+            this.startActivity(i);
+        }).start();
     }
 
     private void richiediAccesso(String id){
@@ -180,40 +187,5 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
             tryInsertDB(id);
         else
             Toast.makeText(this, "Impossibile contattare il server, riprovare.", Toast.LENGTH_LONG).show();
-    }
-
-    private static class RequestUser extends AsyncTask<String, Void, Long> {
-
-        private WeakReference<LoginActivity> activityReference;
-        private String id;
-
-        RequestUser(LoginActivity act) {
-            activityReference = new WeakReference<>(act);
-        }
-
-        @Override
-        protected Long doInBackground(String... ids) {
-            id = ids[0];
-            LoginActivity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) return null;
-
-            MyDatabase db = new MyDatabase(activity);
-            return db.createRecordsOperai(id, "Mario", "Rossi", "Uomo", 22);
-        }
-
-        @Override
-        protected void onPostExecute(Long result) {
-
-            LoginActivity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) return;
-
-            Intent i = new Intent(activity, MainActivity.class);
-            if(result != -1)
-                i.putExtra("Exist", false);
-            else
-                i.putExtra("Exist", true);
-            i.putExtra("ID", id);
-            activity.startActivity(i);
-        }
     }
 }
