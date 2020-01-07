@@ -118,17 +118,17 @@ public class PackageFragment extends Fragment implements WorkListener {
     private void initializeData(){
         packs = new ArrayList<>();
         //gli elementi devono essere sempre <= 10 ma
-        packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
-        packs.add(new Package_item("Cristina", "Cabras", R.drawable.package_default));
-        packs.add(new Package_item("Swag", "Prova", R.drawable.package_default));
-        packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
-        packs.add(new Package_item("Cristina", "Cabras", R.drawable.package_default));
-        packs.add(new Package_item("Swag", "Prova", R.drawable.package_default));
-        packs.add(new Package_item("Iphone 6", "Lezzo", R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", R.drawable.package_default));
-        packs.add(new Package_item("Mente", "MUHAHAHHA", R.drawable.package_default));
+        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        packs.add(new Package_item("Cristina", "Cabras", null, R.drawable.package_default));
+        packs.add(new Package_item("Swag", "Prova", null, R.drawable.package_default));
+        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        packs.add(new Package_item("Cristina", "Cabras", null, R.drawable.package_default));
+        packs.add(new Package_item("Swag", "Prova", null, R.drawable.package_default));
+        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        packs.add(new Package_item("Mente", "MUHAHAHHA", null, R.drawable.package_default));
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml

@@ -181,7 +181,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == Permission_utility.FOTO_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 //fai partire l'intent
                 if (intent != null)
                     startActivityForResult(intent, FOTO_REQUEST);
@@ -283,7 +283,7 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
 
 
-            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, Permission_utility.FOTO_PERMISSION, "Concedi questi permessi per modificare la foto profilo"))
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA}, Permission_utility.FOTO_PERMISSION, "Concedi questi permessi per modificare la foto profilo"))
                 startActivityForResult(chooserIntent,FOTO_REQUEST);
             else intent = chooserIntent;
 

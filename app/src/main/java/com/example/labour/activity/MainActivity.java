@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void workCompleted(Package_item item) {
         new Thread(() -> {
             MyDatabase db = new MyDatabase(this);
-            long result = db.createRecordsPacchi(item.getTitle(), item.getDescription(), user_ID);
+            long result = db.createRecordsPacchi(item.getTitle(), item.getDescription(), item.getUrl(), user_ID);
             runOnUiThread(() -> {
                 if (result != -1) {
                     Snackbar sb = Snackbar.make(findViewById(R.id.frame), "Lavoro completato e salvato", Snackbar.LENGTH_LONG);

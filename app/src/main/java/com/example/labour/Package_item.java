@@ -7,13 +7,15 @@ public class Package_item implements Parcelable {
 
     private String title;
     private String description;
+    private String url;
     private int photoId;
     private Package_Route route;
 
-    public Package_item(String title, String description, int photoId) {
+    public Package_item(String title, String description, String url,int photoId) {
         this.title = title;
         this.description = description;
         this.photoId = photoId;
+        this.url = url;
         route = new Package_Route();
     }
 
@@ -50,6 +52,14 @@ public class Package_item implements Parcelable {
 
     public Package_Route getRoute() {
         return route;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     @Override

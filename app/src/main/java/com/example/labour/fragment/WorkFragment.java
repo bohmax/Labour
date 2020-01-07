@@ -184,6 +184,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
                 setScansionaOff();
                 titolo.setText(R.string.pacco);
                 descrizione.setText(R.string.descizione_lunga);
+                item.setUrl(data.getStringExtra("SCAN_RESULT"));
                 callback.workCompleted(item);
                 item = null;
                 route = null;

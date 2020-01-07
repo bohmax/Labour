@@ -12,10 +12,10 @@ public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "LabourDB";
 
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 13;
 
     private static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS Operai (_ID TEXT PRIMARY KEY not null, nome TEXT not null, cognome TEXT not null, sesso TEXT not null, eta INT not null);";
-    private static final String PACCHI_COMPL = "CREATE TABLE IF NOT EXISTS Pacchi (_ID INTEGER PRIMARY KEY AUTOINCREMENT not null, titolo TEXT not null, descr TEXT not null, Operai_ID TEXT, FOREIGN KEY (Operai_ID) REFERENCES Operai(_ID));";
+    private static final String PACCHI_COMPL = "CREATE TABLE IF NOT EXISTS Pacchi (_ID INTEGER PRIMARY KEY AUTOINCREMENT not null, titolo TEXT not null, descr TEXT not null, url TEXT, Operai_ID TEXT, FOREIGN KEY (Operai_ID) REFERENCES Operai(_ID));";
 
     private static Database Istance;
 

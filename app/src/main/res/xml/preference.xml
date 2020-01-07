@@ -12,6 +12,11 @@
             android:key="CONNECT"
             android:summary="Crea una sessione di prova offline"
             android:title="Sessione di prova" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="Download"
+            android:summary="Scarica le immagini dei pacchi scansionati"
+            android:title="Download immagini" />
         <Preference
             android:key="renameCourses"
             android:title="Controlla permessi"

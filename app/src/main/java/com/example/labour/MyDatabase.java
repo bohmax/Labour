@@ -22,6 +22,7 @@ public class MyDatabase {
     //campi della tabella pacchi
     private final static String OP_TITOLO="titolo";
     private final static String OP_DESCR="descr";
+    private final static String OP_URL="url";
     private final static String OP_EXT="Operai_ID";
 
     public MyDatabase(Context context){
@@ -30,8 +31,6 @@ public class MyDatabase {
             database = dbHelper.getWritableDatabase();
         }
     }
-
-
 
     public long createRecordsOperai(String id, String name, String cognome, String gender, int eta) {
         ContentValues values = new ContentValues();
@@ -43,10 +42,11 @@ public class MyDatabase {
         return database.insert(OP_TABLE, null, values);
     }
 
-    public long createRecordsPacchi(String titolo, String descrizione, String operai_id) {
+    public long createRecordsPacchi(String titolo, String descrizione, String url,String operai_id) {
         ContentValues values = new ContentValues();
         values.put(OP_TITOLO, titolo);
         values.put(OP_DESCR, descrizione);
+        values.put(OP_URL, url);
         values.put(OP_EXT, operai_id);
         return database.insert(OP_PACCHI, null, values);
     }
@@ -81,6 +81,7 @@ public class MyDatabase {
             list.add( new Package_item(
                     cur.getString(cur.getColumnIndex(OP_TITOLO)),
                     cur.getString(cur.getColumnIndex(OP_DESCR)),
+                    cur.getString(cur.getColumnIndex(OP_URL)),
                     R.drawable.package_default));
         }
         cur.close();
