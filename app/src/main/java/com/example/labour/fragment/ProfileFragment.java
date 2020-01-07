@@ -91,7 +91,6 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             ArrayList<Package_item> list_data = savedInstanceState.getParcelableArrayList("list_data");
             if (list_data != null){
                 rv.setLayoutManager(llm);
-                //llm.onRestoreInstanceState(layout);
                 adapter = new PackAdapter(null, list_data);
                 rv.setAdapter(adapter);
             }
@@ -114,8 +113,8 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     @Override
     public void onResume() {
         super.onResume();
-        //if (rv.getLayoutManager() != null && layout != null)
-        //    rv.getLayoutManager().onRestoreInstanceState(layout);
+        if (rv.getLayoutManager() != null && layout != null)
+            rv.getLayoutManager().onRestoreInstanceState(layout);
 
     }
 
