@@ -115,8 +115,15 @@ public class Package_Route implements Parcelable {
         }
 
         Route(Parcel in) {
+
             last_insert = in.readInt();
             passi = in.createIntArray();
+            int[] values = in.createIntArray();
+            Direction[] dir = Direction.values();
+            assert values != null;
+            for (int i = 0; i < MAX_LENGTH; i++) {
+                direction[i] = dir[values[i]];
+            }
         }
 
         public static final Creator<Route> CREATOR = new Creator<Route>() {
@@ -188,6 +195,12 @@ public class Package_Route implements Parcelable {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(last_insert);
             dest.writeIntArray(passi);
+            int[] values = new int[MAX_LENGTH];
+            for (int i = 0; i < MAX_LENGTH; i++)
+                if (direction[i] != null) {
+                    values[i] = direction[i].ordinal();
+                }
+            dest.writeIntArray(values);
         }
     }
 }

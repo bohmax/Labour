@@ -283,7 +283,8 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
 
 
-            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA}, Permission_utility.FOTO_PERMISSION, "Concedi questi permessi per modificare la foto profilo"))
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.CAMERA},
+                    Permission_utility.FOTO_PERMISSION, "Concedi questi permessi per modificare la foto profilo"))
                 startActivityForResult(chooserIntent,FOTO_REQUEST);
             else intent = chooserIntent;
 

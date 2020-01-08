@@ -52,6 +52,7 @@ public class Database extends SQLiteOpenHelper {
         ContentValues values1 = new ContentValues();
         values1.put("titolo", "Prova");
         values1.put("descr", "BELLA PROVA");
+        values1.put("url", "http://circe.di.unipi.it/~gervasi/main/me-full.jpg");
         values1.put("Operai_ID", "pippotest");
         if((db.insert("Pacchi",null,values1))!=-1)
             Log.i("inserito pacchi","wut");

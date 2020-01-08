@@ -1,16 +1,23 @@
 package com.example.labour.fragment;
 
+import android.Manifest;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,12 +33,15 @@ import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
 import com.example.labour.interfacce.WorkListener;
+import com.example.labour.utility.Permission_utility;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.Context.DOWNLOAD_SERVICE;
 
 public class ProfileFragment extends Fragment implements FileInterfaceListener, WorkListener {
 
@@ -48,6 +58,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     private PackAdapter adapter;
     private RecyclerView rv;
     private Parcelable layout;
+    private DownloadReceiver dr = new DownloadReceiver();
 
     @Nullable
     @Override
@@ -70,7 +81,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             if (sf != null)
                 sf = (SubscribeFragment) fm.getFragment(savedInstanceState, "SubscribeFragment");
         }
-
+        context.registerReceiver(dr, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)); //voglio essere notificato quando il download finisce
     }
 
     @Override
@@ -162,7 +173,21 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             outState.putParcelable("list_state", rv.getLayoutManager().onSaveInstanceState());
             outState.putParcelableArrayList("list_data", adapter.getPacks());
         }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == Permission_utility.EXTERNAL_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                //fai partire il download
+                ArrayList<Package_item> pi = adapter.getPacks();
+                downloadImage(pi.get(pi.size()-1));
+            } else {
+                Toast.makeText(context, "Permessi necessari per scaricare l'immagine del pacco", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     public void showPopup(View v) { //viene invocato dal bottone, dichiarato nel xml
@@ -174,9 +199,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     }
 
     @Override
-    public void getTempPath(File file) {
-
-    }
+    public void getTempPath(File file) { }
 
     @Override
     public void saveResult(Boolean result){
@@ -184,18 +207,20 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     }
 
     @Override
-    public void newWork(List<Package_item> list, int pos) {
-
-    }
+    public void newWork(List<Package_item> list, int pos) { }
 
     @Override
-    public void updateAfterStep(float coordinata) {
-
-    }
+    public void updateAfterStep(float coordinata) { }
 
     @Override
     public void workCompleted(Package_item item) {
         adapter.addElement(item);
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("Download", true)) { // non scaricare se l'utente non lo richiede
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Permission_utility.EXTERNAL_PERMISSION, "Concedi questi permessi per modificare la foto profilo")) {
+                downloadImage(item);
+            }
+        }
     }
 
     private void setRecyclerView(RecyclerView.LayoutManager llm){
@@ -203,6 +228,36 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         ArrayList<Package_item> list = new ArrayList<>();
         adapter = new PackAdapter(null, list);
         new RequestCompletedPack((MainActivity) context, this).execute(user_ID);
+    }
+
+    private void downloadImage(Package_item item){
+        File file = new File(context.getExternalFilesDir(null), item.getTitle());
+        try {
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(item.getUrl()))
+                    .setTitle("Download " + item.getTitle())
+                    .setDescription("Downloading")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                    .setDestinationUri(Uri.fromFile(file))
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true);
+            DownloadManager downloadManager= (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+            downloadManager.enqueue(request);
+        } catch (IllegalArgumentException ignored){}
+    }
+
+    private class DownloadReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String act = intent.getAction();
+
+            if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(act)) {
+                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,0);
+                Uri u = ((DownloadManager) context.getSystemService(DOWNLOAD_SERVICE)).getUriForDownloadedFile(id);
+
+            }
+        }
     }
 
     private static class RequestCompletedPack extends AsyncTask<String, ArrayList<Package_item>, Void> {
@@ -227,6 +282,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
             MyDatabase db = new MyDatabase(activity);
             while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 100) {
+                if (PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("Download", true)) {}
                 offset = range;
                 range += offset;
                 publishProgress(list);

@@ -7,9 +7,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.labour.R;
+import com.google.android.material.snackbar.Snackbar;
+
 public class Permission_utility {
 
-    public static final int NFC_PERMISSION = 1;
+    public static final int EXTERNAL_PERMISSION = 1;
     public static final int FOTO_PERMISSION = 2;
 
     public static boolean requestPermission(Activity activity, String permission, int requestCode, String explenation){
@@ -43,7 +46,7 @@ public class Permission_utility {
                 i++;
             }
         if (i == 0)
-            Toast.makeText(act, explenation, Toast.LENGTH_SHORT).show();
+            Snackbar.make(act.findViewById(R.id.frame), explenation, Snackbar.LENGTH_SHORT).show();
         fragment.requestPermissions(permissions, requestCode);
         return false;
     }
