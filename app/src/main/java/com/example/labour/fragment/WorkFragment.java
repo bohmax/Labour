@@ -104,8 +104,10 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         scansiona.setOnClickListener(this);
         if (item == null)
             setScansionaOff();
-        else if (item.getRoute().getCurrenteSteps() == 0)
+        else if (item.getRoute().getCurrenteSteps() == 0) {
             setScansionaOn();
+            count.setText("");
+        }
         else {
             setScansionaOff();
             scansiona.setText(R.string.arrive_per);
@@ -238,10 +240,14 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         item = list.get(pos);
         titolo.setText(item.getTitle());
         descrizione.setText(item.getDescription());
-        scansiona.setText(R.string.arrive_per);
         route = item.getRoute();
-        String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
-        count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
+        if (item.getRoute().getCurrenteSteps() == 0)
+            setScansionaOn();
+        else {
+            scansiona.setText(R.string.arrive_per);
+            String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
+            count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
+        }
     }
 
     @Override
