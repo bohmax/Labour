@@ -1,5 +1,6 @@
 package com.example.labour;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,6 +10,7 @@ public class Package_item implements Parcelable {
     private String description;
     private String url;
     private int photoId;
+    private Bitmap photo;
     private Package_Route route;
 
     public Package_item(String title, String description, String url,int photoId) {
@@ -16,6 +18,7 @@ public class Package_item implements Parcelable {
         this.description = description;
         this.photoId = photoId;
         this.url = url;
+        photo = null;
         route = new Package_Route();
     }
 
@@ -62,6 +65,14 @@ public class Package_item implements Parcelable {
         this.url = url;
     }
 
+    Bitmap getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Bitmap photo) {
+        this.photo = photo;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -74,4 +85,5 @@ public class Package_item implements Parcelable {
         dest.writeInt(photoId);
         dest.writeParcelable(route, flags);
     }
+
 }

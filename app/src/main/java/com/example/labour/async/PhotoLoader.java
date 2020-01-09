@@ -1,13 +1,14 @@
 package com.example.labour.async;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
+import com.example.labour.interfacce.BitmapReadyListener;
 import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.utility.File_utility;
 import com.mikhaellopez.circularimageview.CircularImageView;
@@ -16,8 +17,10 @@ import java.lang.ref.WeakReference;
 public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
 
     private WeakReference<CircularImageView> civ;
+    private WeakReference<Context> context;
     private FileInterfaceListener fragment;
-    private int width, height, errcode;
+    private BitmapReadyListener brl;
+    private int width, height, errcode, index;//index viene usato quando utilizzo brl per aggiornare l'adapter
     private String path;
 
     //viene chiamata se l'utente ha selezionato la galleria
@@ -32,21 +35,29 @@ public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
     }
 
     //Istanziato da SubscribeFragment se deve essere caricato dalla fotocamera
-    public PhotoLoader(DialogFragment fragment, WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException, ClassCastException{
+    public PhotoLoader(FileInterfaceListener fragment, WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException, ClassCastException{
         if(civ == null) throw new NullPointerException();
-        if (!(fragment instanceof FileInterfaceListener)) throw new ClassCastException();
         this.civ = civ;
-        this.fragment =(FileInterfaceListener) fragment;
+        this.fragment = fragment;
         width = widthdp;
         height = heightdp;
     }
 
-    //Istanziato quando si deve caricare la foto attuale dell'utente
-    public PhotoLoader(Fragment fragment, WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException, ClassCastException{
+    /*//Istanziato quando si deve caricare la foto attuale dell'utente
+    public PhotoLoader(FileInterfaceListener fragment, WeakReference<CircularImageView> civ, int widthdp, int heightdp) throws NullPointerException, ClassCastException{
         if(civ == null || fragment == null) throw new NullPointerException();
-        if (!(fragment instanceof FileInterfaceListener)) throw new ClassCastException();
         this.civ = civ;
-        this.fragment =(FileInterfaceListener) fragment;
+        this.fragment =fragment;
+        width = widthdp;
+        height = heightdp;
+    }*/
+
+    //Istanziato quando si deve aggiornare un Package_item
+    public PhotoLoader(Context context, BitmapReadyListener brl, int index, int widthdp, int heightdp) throws NullPointerException{
+        if (context == null) throw new NullPointerException();
+        this.context = new WeakReference<>(context);
+        this.brl = brl;
+        this.index = index;
         width = widthdp;
         height = heightdp;
     }
@@ -54,6 +65,8 @@ public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
     @Override
     protected Bitmap doInBackground(Uri... uris) {
         Bitmap bitmap = null;
+        if (brl != null && context.get()!= null)
+            return File_utility.getBitMap(context.get(), uris[0], width, height);
         if(civ!=null)
             bitmap = File_utility.getBitMap(civ.get().getContext(), uris[0], width, height);
         if(path != null) {// l'utente ha selezionato la galleria
@@ -68,6 +81,10 @@ public class PhotoLoader extends AsyncTask<Uri, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
+        if (brl != null){
+            if (bitmap != null)
+            brl.loadedBitmap(bitmap, index);
+        }
         if (civ != null) {
             boolean result = false;
             if (bitmap != null)

@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.labour.interfacce.BitmapReadyListener;
 import com.example.labour.interfacce.CardViewClickListener;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder
 
     private ArrayList<Package_item> packs;
     private CardViewClickListener act;
+    private BitmapReadyListener brl;
 
     public PackAdapter(Activity act, ArrayList<Package_item> packs) throws NullPointerException, ClassCastException {
         if (packs == null) throw new NullPointerException();
@@ -26,7 +28,6 @@ public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder
         if (act != null)
             if (!(act instanceof CardViewClickListener)) throw new ClassCastException();
         this.act = (CardViewClickListener) act;
-
     }
 
     @Override
@@ -50,7 +51,13 @@ public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder
         Package_item item = packs.get(i);
         PackViewHolder.titolo.setText(item.getTitle());
         PackViewHolder.descr.setText(item.getDescription());
-        PackViewHolder.photo.setImageResource(item.getPhotoId());
+        if (brl == null)
+            PackViewHolder.photo.setImageResource(item.getPhotoId());
+        else if (item.getPhoto() != null)
+            PackViewHolder.photo.setImageBitmap(item.getPhoto());
+        else //percorso presente, ma bitmap assente
+            brl.startImageRequest(item, i);
+
     }
 
     @Override
@@ -76,6 +83,14 @@ public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder
     public void updatePassi(float coordinata){
         for (Package_item item: packs)
             item.getRoute().passo(coordinata);
+    }
+
+    public void setImageDownload(BitmapReadyListener brl){
+        this.brl = brl;
+    }
+
+    public void disableImageDownload(){
+        this.brl = null;
     }
 
     static class PackViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

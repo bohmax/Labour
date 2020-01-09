@@ -26,7 +26,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, CardViewClickListener, WorkListener {
 
     private String user_ID = "pippotest";
-    private boolean new_user = true; //togli l'assegnazione
+    private boolean new_user = false; //togli l'assegnazione
     private MenuFragment menuf;
     private PackageFragment packf = new PackageFragment();
     private WorkFragment workf = new WorkFragment();

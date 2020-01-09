@@ -15,6 +15,7 @@ public class Permission_utility {
     public static final int EXTERNAL_PERMISSION = 1;
     public static final int FOTO_PERMISSION = 2;
 
+    @SuppressWarnings("unused")
     public static boolean requestPermission(Activity activity, String permission, int requestCode, String explenation){
         //check permission
         if(ContextCompat.checkSelfPermission(activity, permission)

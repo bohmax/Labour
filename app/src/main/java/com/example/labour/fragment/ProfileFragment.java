@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -29,6 +32,7 @@ import com.example.labour.PackAdapter;
 import com.example.labour.Package_item;
 import com.example.labour.activity.MainActivity;
 import com.example.labour.async.PhotoLoader;
+import com.example.labour.interfacce.BitmapReadyListener;
 import com.example.labour.interfacce.FileInterfaceListener;
 import com.example.labour.MyDatabase;
 import com.example.labour.R;
@@ -43,7 +47,7 @@ import java.util.List;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
 
-public class ProfileFragment extends Fragment implements FileInterfaceListener, WorkListener {
+public class ProfileFragment extends Fragment implements FileInterfaceListener, WorkListener, BitmapReadyListener {
 
     private String user_ID="pippotest";
     private String[] userInfo;
@@ -81,7 +85,6 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             if (sf != null)
                 sf = (SubscribeFragment) fm.getFragment(savedInstanceState, "SubscribeFragment");
         }
-        context.registerReceiver(dr, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)); //voglio essere notificato quando il download finisce
     }
 
     @Override
@@ -98,12 +101,14 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         rv.setNestedScrollingEnabled(false);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
 
+        android.os.Debug.waitForDebugger();
         if (savedInstanceState != null){
             layout = savedInstanceState.getParcelable("list_state");
             ArrayList<Package_item> list_data = savedInstanceState.getParcelableArrayList("list_data");
             if (list_data != null){
                 rv.setLayoutManager(llm);
                 adapter = new PackAdapter(null, list_data);
+                adapter.setImageDownload(this);
                 rv.setAdapter(adapter);
             }
             else setRecyclerView(llm);
@@ -127,7 +132,13 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         super.onResume();
         if (rv.getLayoutManager() != null && layout != null)
             rv.getLayoutManager().onRestoreInstanceState(layout);
+        context.registerReceiver(dr, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)); //voglio essere notificato quando il download finisce
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        context.unregisterReceiver(dr);
     }
 
     private void setView(String[] str){
@@ -181,9 +192,13 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 //fai partire il download
                 ArrayList<Package_item> pi = adapter.getPacks();
-                downloadImage(pi.get(pi.size()-1));
+                downloadImage(pi.get(pi.size()-1), pi.size()-1);
+                adapter.setImageDownload(this);
+                adapter.notifyDataSetChanged();
             } else {
                 Toast.makeText(context, "Permessi necessari per scaricare l'immagine del pacco", Toast.LENGTH_LONG).show();
+                adapter.disableImageDownload();
+                adapter.notifyDataSetChanged();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -215,34 +230,62 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     @Override
     public void workCompleted(Package_item item) {
         adapter.addElement(item);
-        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("Download", true)) { // non scaricare se l'utente non lo richiede
-            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    Permission_utility.EXTERNAL_PERMISSION, "Concedi questi permessi per modificare la foto profilo")) {
-                downloadImage(item);
-            }
-        }
+        startImageRequest(item, adapter.getPacks().size()-1);
     }
 
     private void setRecyclerView(RecyclerView.LayoutManager llm){
         rv.setLayoutManager(llm);
         ArrayList<Package_item> list = new ArrayList<>();
         adapter = new PackAdapter(null, list);
+        adapter.setImageDownload(this);
         new RequestCompletedPack((MainActivity) context, this).execute(user_ID);
     }
 
-    private void downloadImage(Package_item item){
-        File file = new File(context.getExternalFilesDir(null), item.getTitle());
-        try {
-            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(item.getUrl()))
-                    .setTitle("Download " + item.getTitle())
-                    .setDescription("Downloading")
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                    .setDestinationUri(Uri.fromFile(file))
-                    .setAllowedOverMetered(true)
-                    .setAllowedOverRoaming(true);
-            DownloadManager downloadManager= (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-            downloadManager.enqueue(request);
-        } catch (IllegalArgumentException ignored){}
+    //index è l'indice dell'elemento da scaricare dell'adapter
+    private void downloadImage(Package_item item, int index){
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File file = new File(context.getExternalFilesDir(null), user_ID + "_" + index);
+            if (!file.exists()) {
+                if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("Download", true)) {
+                    try {
+                        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(item.getUrl()))
+                                .setTitle("Download " + item.getTitle())
+                                .setDescription("Downloading")
+                                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                                .setDestinationUri(Uri.fromFile(file))
+                                .setAllowedOverMetered(true)
+                                .setAllowedOverRoaming(true);
+                        DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+                        downloadManager.enqueue(request);
+                    } catch (IllegalArgumentException ignored) { }
+                }
+            }
+            else {
+                new PhotoLoader(context,this, index, 75, 75).execute(Uri.fromFile(file));
+            }
+        }
+    }
+
+    @Override
+    public void startImageRequest(Package_item item, int index){
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("Download", true)) { // non scaricare se l'utente non lo richiede
+            if (Permission_utility.requestPermission(this, getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Permission_utility.EXTERNAL_PERMISSION, "Concedi questi permessi per modificare la foto profilo")) {
+                new Thread(new download(item, index)).start();
+            }
+            else {
+                adapter.disableImageDownload();
+            }
+        }
+    }
+
+    @Override
+    public void loadedBitmap(Bitmap bitmap, int index) {
+        Package_item it= adapter.getPacks().get(index);
+        if (it != null) {
+            it.setPhoto(bitmap);
+            adapter.notifyItemChanged(index);
+        }
     }
 
     private class DownloadReceiver extends BroadcastReceiver{
@@ -254,8 +297,13 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
 
             if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(act)) {
                 long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,0);
-                Uri u = ((DownloadManager) context.getSystemService(DOWNLOAD_SERVICE)).getUriForDownloadedFile(id);
-
+                DownloadManager dm =(DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+                Uri u =  dm.getUriForDownloadedFile(id);
+                String path = getNamefromUri(u, dm, id);
+                if (path != null) {
+                    int index = Integer.valueOf(path.split("_")[1]);
+                    new PhotoLoader(context, ProfileFragment.this, index, 75, 75).execute(u);
+                }
             }
         }
     }
@@ -281,8 +329,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             if (activity == null || activity.isFinishing()) return null;
 
             MyDatabase db = new MyDatabase(activity);
-            while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 100) {
-                if (PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("Download", true)) {}
+            while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 10) {
                 offset = range;
                 range += offset;
                 publishProgress(list);
@@ -317,5 +364,45 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             String[] ris = db.searchByIdOperai(user_ID);
             ((MainActivity)context).runOnUiThread(() -> setView(ris));
         }
+    }
+
+    private class download implements Runnable {
+
+        Package_item item;
+        int index; //index for the start of the request
+
+        download(Package_item items,int index) throws NullPointerException {
+            if (items == null) throw new NullPointerException();
+            this.item = items;
+            this.index = index;
+        }
+
+        @Override
+        public void run() {
+            //Controlla se la memoria esterna è scrivibile & Controlla che il file esista
+            downloadImage(item, index++);
+        }
+    }
+
+    private String getNamefromUri(Uri uri, DownloadManager dm, long downloadID){
+        String result = null;
+        if (uri == null || uri.getScheme() == null) return null;
+        if (uri.getScheme().equals("content")) {
+            DownloadManager.Query query = new DownloadManager.Query();
+            query.setFilterById(downloadID);
+            try (Cursor cursor = dm.query(query)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+                }
+            }
+        }
+        if (result == null)
+            result = uri.getPath();
+        if (result == null) return null;
+        int cut = result.lastIndexOf('/');
+        if (cut != -1) {
+            result = result.substring(cut + 1);
+        }
+        return result;
     }
 }
