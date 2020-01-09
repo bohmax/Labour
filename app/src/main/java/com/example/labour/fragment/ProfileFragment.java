@@ -98,15 +98,15 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         //-------
         //parte recycleview
         rv = view.findViewById(R.id.rv);
-        rv.setNestedScrollingEnabled(false);
+        //rv.setNestedScrollingEnabled(false);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
 
-        android.os.Debug.waitForDebugger();
         if (savedInstanceState != null){
             layout = savedInstanceState.getParcelable("list_state");
             ArrayList<Package_item> list_data = savedInstanceState.getParcelableArrayList("list_data");
             if (list_data != null){
                 rv.setLayoutManager(llm);
+
                 adapter = new PackAdapter(null, list_data);
                 adapter.setImageDownload(this);
                 rv.setAdapter(adapter);
@@ -329,7 +329,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
             if (activity == null || activity.isFinishing()) return null;
 
             MyDatabase db = new MyDatabase(activity);
-            while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 10) {
+            while ((list = db.searchByIdPacchi(id, range, offset)) != null && range <= 50) {
                 offset = range;
                 range += offset;
                 publishProgress(list);

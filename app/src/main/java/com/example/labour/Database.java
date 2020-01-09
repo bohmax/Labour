@@ -12,15 +12,15 @@ public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "LabourDB";
 
-    private static final int DATABASE_VERSION = 14;
+    private static final int DATABASE_VERSION = 17;
 
     private static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS Operai (_ID TEXT PRIMARY KEY not null, nome TEXT not null, cognome TEXT not null, sesso TEXT not null, eta INT not null);";
     private static final String PACCHI_COMPL = "CREATE TABLE IF NOT EXISTS Pacchi (_ID INTEGER PRIMARY KEY AUTOINCREMENT not null, titolo TEXT not null, descr TEXT not null, url TEXT, Operai_ID TEXT, FOREIGN KEY (Operai_ID) REFERENCES Operai(_ID));";
 
     private static Database Istance;
 
-    static Database getInstance(Context context){
-        if(Istance == null)
+    static Database getInstance(Context context) {
+        if (Istance == null)
             Istance = new Database(context.getApplicationContext());
         return Istance;
     }
@@ -36,8 +36,7 @@ public class Database extends SQLiteOpenHelper {
             db.execSQL(DATABASE_CREATE);
             db.execSQL("PRAGMA foreign_keys=ON");
             db.execSQL(PACCHI_COMPL);
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
             e.printStackTrace();
             throw e;
         }
@@ -47,15 +46,15 @@ public class Database extends SQLiteOpenHelper {
         values.put("cognome", "");
         values.put("sesso", "Uomo");
         values.put("eta", 0);
-        if((db.insert("Operai",null,values))!=-1)
-            Log.i("inserito","wut");
+        if ((db.insert("Operai", null, values)) != -1)
+            Log.i("inserito", "wut");
         ContentValues values1 = new ContentValues();
         values1.put("titolo", "Prova");
         values1.put("descr", "BELLA PROVA");
         values1.put("url", "http://circe.di.unipi.it/~gervasi/main/me-full.jpg");
         values1.put("Operai_ID", "pippotest");
-        if((db.insert("Pacchi",null,values1))!=-1)
-            Log.i("inserito pacchi","wut");
+        if ((db.insert("Pacchi", null, values1)) != -1)
+            Log.i("inserito pacchi", "wut");
         //db.insertOrThrow("Pacchi",null,values1);
     }
 
