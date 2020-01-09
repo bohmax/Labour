@@ -1,5 +1,7 @@
 package com.example.labour.interfacce;
 
+import android.graphics.Bitmap;
+
 import java.io.File;
 
 public interface FileInterfaceListener {
@@ -14,6 +16,6 @@ public interface FileInterfaceListener {
      * chiamata da PhotoLoader per notificare se bisogna aggiornare la possibile futura nuova foto o meno
      * @param result true se ha avuto esito positivo, false altrimenti
      */
-    void saveResult(Boolean result);
+    void saveResult(Bitmap bitmap, Boolean result);
 
 }

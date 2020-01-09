@@ -149,7 +149,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         File pic = new File(pathpic);
         if(pic.exists()) {
             progress.setVisibility(View.VISIBLE);
-            new PhotoLoader(this ,new WeakReference<>(civ), 120, 120).execute(Uri.fromFile(pic));
+            new PhotoLoader(context ,this, null, 120, 120).execute(Uri.fromFile(pic));
         }
     }
 
@@ -217,8 +217,10 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
     public void getTempPath(File file) { }
 
     @Override
-    public void saveResult(Boolean result){
+    public void saveResult(Bitmap bitmpa, Boolean result){
         progress.setVisibility(View.GONE);
+        if (result)
+            civ.setImageBitmap(bitmpa);
     }
 
     @Override

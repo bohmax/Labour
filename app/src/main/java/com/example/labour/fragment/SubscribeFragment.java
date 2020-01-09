@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -101,10 +102,14 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
             mCurrentPhotoPath = savedInstanceState.getString("path");
             mnewTempPath = savedInstanceState.getString("new");
         }
-        if (mCurrentPhotoPath != null)
-            new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
-        else if (pic != null && pic.exists())
-            new PhotoLoader(this, new WeakReference<>(civ), 150, 150).execute(Uri.fromFile(pic));
+        if (mCurrentPhotoPath != null) {
+            progress.setVisibility(View.VISIBLE);
+            new PhotoLoader(mContext, this, null, 150, 150).execute(Uri.fromFile(new File(mCurrentPhotoPath)));
+        }
+        else if (pic != null && pic.exists()){
+            progress.setVisibility(View.VISIBLE);
+            new PhotoLoader(mContext, this, null, 150, 150).execute(Uri.fromFile(pic));
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_data);
         builder.setIcon(R.drawable.ic_account_circle_black_24dp);
@@ -205,12 +210,12 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
                 if(data==null || data.getData()==null){// l'utente ha selezionato la camera
                     Log.i("sucess", "well");
                     Uri newfile = Uri.fromFile(new File(mnewTempPath));
-                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150).
+                    new PhotoLoader(mContext, this, null, 150, 150).
                             execute(newfile, mCurrentPhotoPath == null? null: Uri.fromFile(new File(mCurrentPhotoPath)));
                 }
                 else
                     //l'utente ha selezionato una foto dalla galleria
-                    new PhotoLoader(this, new WeakReference<>(civ), 150, 150, mnewTempPath).
+                    new PhotoLoader(mContext, this, mnewTempPath, 150, 150).
                             execute(data.getData(), mCurrentPhotoPath == null? null: Uri.fromFile(new File(mCurrentPhotoPath)));
             }
             else {
@@ -293,9 +298,10 @@ public class SubscribeFragment extends DialogFragment implements PopupMenu.OnMen
     }
 
     @Override
-    public void saveResult(Boolean result) {
+    public void saveResult(Bitmap bitmap, Boolean result) {
         progress.setVisibility(View.GONE);
-        if (result && mnewTempPath != null) //se android restarta l'app e quindi mnewTemp sarebbe null.
+        if (result) //se android restarta l'app newtemp è uguale a null
+            civ.setImageBitmap(bitmap);
             mCurrentPhotoPath = mnewTempPath;
         mnewTempPath = null;
     }
