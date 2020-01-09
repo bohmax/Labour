@@ -157,6 +157,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void onCardViewClick(int pos) {
         pos_lastSelectedItem = pos;
         workf.newWork(packf.getPacks(), pos);
+        Snackbar sb = Snackbar.make(findViewById(R.id.frame), "Nuovo lavoro da completare", Snackbar.LENGTH_LONG);
+        sb.setAction("Mostra", v -> ((BottomNavigationView) (findViewById(R.id.bottom))).setSelectedItemId(R.id.passi)).show();
     }
 
     @Override

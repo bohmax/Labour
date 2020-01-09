@@ -13,7 +13,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.example.labour.async.ServerRequest;
@@ -32,8 +31,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     private MenuFragment menuf;
     private ProgressBar progress;
     private Snackbar sb;
-    EditText test;
-
+    //EditText test; //usato per testare
     boolean serverrequest = false; //per sapere se l'utente vuole interagire con il server
     boolean nfc_not_choosed = false; //se l'utente preme no nell'alert dialog questo non verrà mostrato nuovamente
 
@@ -41,9 +39,9 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        test = findViewById(R.id.test);
+        //test = findViewById(R.id.test);
         progress = findViewById(R.id.scroll);
-        test.setOnClickListener(v -> richiediAccesso(test.getText().toString()));
+        //test.setOnClickListener(v -> richiediAccesso(test.getText().toString()));
         if(savedInstanceState != null) {
             menuf =(MenuFragment) getSupportFragmentManager().getFragment(savedInstanceState, "MenuFragmente");
             nfc_not_choosed = savedInstanceState.getBoolean("NFC_CHOISE");
@@ -76,7 +74,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
         super.onResume();
         if(nfc != null) {
             boolean pref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("NFC", true);
-            serverrequest = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("CONNECT", false);
+            serverrequest = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("CONNECT", true);
             Log.i("preso", String.valueOf(pref));
             if (nfc.isEnabled()) nfc.enableForegroundDispatch(this, pendingIntent, null, null);
             else if(!pref) sb.dismiss();
@@ -148,7 +146,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
 
     private void richiediAccesso(String id){
         if(id.length()>0) {
-            if (serverrequest) {
+            if (!serverrequest) {
                 progress.setVisibility(View.VISIBLE);
                 new ServerRequest(this).execute(id);
             } else tryInsertDB(id);

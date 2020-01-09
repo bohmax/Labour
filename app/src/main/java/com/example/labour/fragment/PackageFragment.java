@@ -117,17 +117,17 @@ public class PackageFragment extends Fragment implements WorkListener {
 
     private void initializeData(){
         packs = new ArrayList<>();
-        //gli elementi devono essere sempre <= 10 ma
-        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        //gli elementi devono essere sempre <= 10 per evitare troppe new
+        packs.add(new Package_item("Iphone 6", "Apple", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Samsung", null, R.drawable.package_default));
         packs.add(new Package_item("Cristina", "Cabras", null, R.drawable.package_default));
         packs.add(new Package_item("Swag", "Prova", null, R.drawable.package_default));
-        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        packs.add(new Package_item("Iphone 6", "Apple", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Samsung", null, R.drawable.package_default));
         packs.add(new Package_item("Cristina", "Cabras", null, R.drawable.package_default));
         packs.add(new Package_item("Swag", "Prova", null, R.drawable.package_default));
-        packs.add(new Package_item("Iphone 6", "Lezzo", null, R.drawable.package_default));
-        packs.add(new Package_item("Galaxy", "Puzza", null, R.drawable.package_default));
+        packs.add(new Package_item("Iphone 6", "Apple", null, R.drawable.package_default));
+        packs.add(new Package_item("Galaxy", "Shis", null, R.drawable.package_default));
         packs.add(new Package_item("Mente", "MUHAHAHHA", null, R.drawable.package_default));
     }
 

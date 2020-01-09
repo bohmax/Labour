@@ -30,7 +30,7 @@ public class ServerRequest extends AsyncTask<String, Void, Boolean> {
     protected Boolean doInBackground(String... nome) {
         boolean answer;
         try {
-            String ip = "192.168.1.125";
+            String ip = "10.101.29.80";
             Socket server = new Socket(ip, 3000);
             BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
             String hope = in.readLine();
