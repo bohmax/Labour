@@ -74,7 +74,6 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
         super.onResume();
         if(nfc != null) {
             boolean pref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("NFC", true);
-            serverrequest = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("CONNECT", true);
             Log.i("preso", String.valueOf(pref));
             if (nfc.isEnabled()) nfc.enableForegroundDispatch(this, pendingIntent, null, null);
             else if(!pref) sb.dismiss();
@@ -145,6 +144,7 @@ public class LoginActivity extends AppCompatActivity implements TaskListener {
     }
 
     private void richiediAccesso(String id){
+        serverrequest = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("CONNECT", true);
         if(id.length()>0) {
             if (!serverrequest) {
                 progress.setVisibility(View.VISIBLE);
