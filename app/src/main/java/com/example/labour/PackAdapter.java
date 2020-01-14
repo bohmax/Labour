@@ -1,6 +1,4 @@
 package com.example.labour;
-
-import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +17,13 @@ import java.util.ArrayList;
 public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder> {
 
     private ArrayList<Package_item> packs;
-    private CardViewClickListener act;
+    private CardViewClickListener cvc;
     private BitmapReadyListener brl;
 
-    public PackAdapter(Activity act, ArrayList<Package_item> packs) throws NullPointerException, ClassCastException {
+    public PackAdapter(CardViewClickListener cvc, ArrayList<Package_item> packs) throws NullPointerException, ClassCastException {
         if (packs == null) throw new NullPointerException();
         this.packs = packs;
-        if (act != null)
-            if (!(act instanceof CardViewClickListener)) throw new ClassCastException();
-        this.act = (CardViewClickListener) act;
+        this.cvc = cvc;
     }
 
     @Override
@@ -40,8 +36,8 @@ public class PackAdapter extends RecyclerView.Adapter<PackAdapter.PackViewHolder
     public PackViewHolder onCreateViewHolder(ViewGroup vg, int i) {
         View v = LayoutInflater.from(vg.getContext()).inflate(R.layout.card_layout, vg, false);
         PackViewHolder pv = new PackViewHolder(v);
-        if (act != null)
-            pv.setonCardViewClickListener(act);
+        if (cvc != null)
+            pv.setonCardViewClickListener(cvc);
         return pv;
     }
 

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,12 +18,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.labour.PackAdapter;
 import com.example.labour.Package_item;
 import com.example.labour.R;
+import com.example.labour.activity.MainActivity;
+import com.example.labour.interfacce.CardViewClickListener;
 import com.example.labour.interfacce.WorkListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PackageFragment extends Fragment implements WorkListener {
+public class PackageFragment extends Fragment implements WorkListener, AdapterView.OnItemClickListener {
 
     private boolean exist = false;
     private ArrayList<Package_item> packs;
@@ -73,19 +76,16 @@ public class PackageFragment extends Fragment implements WorkListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         rv = view.findViewById(R.id.rv);
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-        //rv.setHasFixedSize(true);
 
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         if (savedInstanceState != null) {
             layout = savedInstanceState.getParcelable("list_state");
             packs = savedInstanceState.getParcelableArrayList("list_data");
             if (packs != null){
                 rv.setLayoutManager(llm);
-                //llm.onRestoreInstanceState(layout);
-                adapter = new PackAdapter(getActivity(), packs);
+                adapter = new PackAdapter((MainActivity) getActivity(), packs);
                 rv.setAdapter(adapter);
             } else setRecyclerView(llm);
-
         }
         else setRecyclerView(llm);
     }
@@ -150,7 +150,7 @@ public class PackageFragment extends Fragment implements WorkListener {
     private void setRecyclerView(RecyclerView.LayoutManager llm){
         rv.setLayoutManager(llm);
         initializeData();
-        adapter = new PackAdapter(getActivity(), packs);
+        adapter = new PackAdapter((MainActivity) getActivity(), packs);
         rv.setAdapter(adapter);
     }
 
@@ -167,5 +167,11 @@ public class PackageFragment extends Fragment implements WorkListener {
     @Override
     public void workCompleted(Package_item item) {
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (getActivity() != null)
+            ((CardViewClickListener) getActivity()).onCardViewClick(position);
     }
 }

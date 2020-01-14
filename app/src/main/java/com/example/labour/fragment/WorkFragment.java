@@ -244,6 +244,7 @@ public class WorkFragment extends Fragment implements SensorEventListener, WorkL
         if (item.getRoute().getCurrenteSteps() == 0)
             setScansionaOn();
         else {
+            setScansionaOff();
             scansiona.setText(R.string.arrive_per);
             String coordinata = route.getCurrenteDirection().toString().replace("_", " ");
             count.setText(String.format("Fai %s a %s", route.getCurrenteSteps(), coordinata));
