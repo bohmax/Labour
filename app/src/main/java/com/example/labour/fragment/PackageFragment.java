@@ -76,6 +76,7 @@ public class PackageFragment extends Fragment implements WorkListener, AdapterVi
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         rv = view.findViewById(R.id.rv);
+        rv.setHasFixedSize(true);
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         if (savedInstanceState != null) {

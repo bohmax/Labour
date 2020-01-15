@@ -98,7 +98,7 @@ public class ProfileFragment extends Fragment implements FileInterfaceListener, 
         //-------
         //parte recycleview
         rv = view.findViewById(R.id.rv);
-        //rv.setNestedScrollingEnabled(false);
+        rv.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
 
         if (savedInstanceState != null){
